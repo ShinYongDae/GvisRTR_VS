@@ -1937,9 +1937,23 @@ void CDlgMenu05::SelchangeComboLayer(int nIndex)
 				}
 
 				if (sLayer == _T("1"))
+				{
 					m_sLayerDn.Format(_T("BOTTOM-2-%s"), sRes);
+					if (pDoc->GetTestMode() != MODE_NONE)
+					{
+						pDoc->SetTestMode(MODE_INNER);
+						DispTestMode();
+					}
+				}
 				else
+				{
 					m_sLayerDn.Format(_T("BOTTOM-4-%s"), sRes);
+					if (pDoc->GetTestMode() != MODE_NONE)
+					{
+						pDoc->SetTestMode(MODE_OUTER);
+						DispTestMode();
+					}
+				}
 			}
 		}
 		else if (m_sLayer.Find(_T("BOTTOM")) >= 0)
@@ -1960,9 +1974,23 @@ void CDlgMenu05::SelchangeComboLayer(int nIndex)
 				}
 
 				if (sLayer == _T("2"))
+				{
 					m_sLayerUp.Format(_T("TOP-1-%s"), sRes);
+					if (pDoc->GetTestMode() != MODE_NONE)
+					{
+						pDoc->SetTestMode(MODE_INNER);
+						DispTestMode();
+					}
+				}
 				else
+				{
 					m_sLayerUp.Format(_T("TOP-3-%s"), sRes);
+					if (pDoc->GetTestMode() != MODE_NONE)
+					{
+						pDoc->SetTestMode(MODE_OUTER);
+						DispTestMode();
+					}
+				}
 			}
 		}
 
@@ -4575,7 +4603,7 @@ int CDlgMenu05::LoadPCRDnFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 	{
 		strFileData.Format(_T("PCR파일이 설정되지 않았습니다."));
 		pView->MsgBox(strFileData);
-		// 		AfxMessageBox(strFileData);
+		//AfxMessageBox(strFileData);
 		return(2);
 	}
 
@@ -4583,7 +4611,7 @@ int CDlgMenu05::LoadPCRDnFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 	{
 		strFileData.Format(_T("PCR[1]관련 메모리가 할당되지 않았습니다."));
 		pView->MsgBox(strFileData);
-		// 		AfxMessageBox(strFileData);
+		//AfxMessageBox(strFileData);
 		return(2);
 	}
 
@@ -4600,7 +4628,7 @@ int CDlgMenu05::LoadPCRDnFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 	{
 		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
 			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer, nSerial);
-		if (!findfile.FindFile(strPath))
+		if (!findfile.FindFile(sPath))
 		{
 			return(2);
 		}

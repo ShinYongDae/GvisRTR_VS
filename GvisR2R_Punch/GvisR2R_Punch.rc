@@ -166,9 +166,11 @@ FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     ICON            IDR_MAINFRAME,IDC_STATIC,14,14,20,20
     LTEXT           "GvisR2R_Punch, 버전 2.0.0",IDC_STATIC,42,14,114,8,SS_NOPREFIX
-    LTEXT           "Copyright (C) 2024.06.27",IDC_STATIC,42,26,114,8
+    LTEXT           "Copyright (C) 2024.08.07",IDC_STATIC,42,26,114,8
     DEFPUSHBUTTON   "확인",IDOK,113,39,50,14,WS_GROUP
     LTEXT           "VS OFFLINE - ITS code ",IDC_STATIC,7,45,100,8
+    LTEXT           "VS OFFLINE - ITS code ",IDC_STATIC,7,45,100,8
+    LTEXT           "Change mode On Layerring",IDC_STATIC,7,53,100,8
 END
 
 IDD_GVISR2R_PUNCH_FORM DIALOGEX 0, 0, 630, 461
