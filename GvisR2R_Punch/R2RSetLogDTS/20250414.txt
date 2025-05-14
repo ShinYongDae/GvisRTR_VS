@@ -1,0 +1,4 @@
+2025/04/14 12:22:55: Error occur at m_dataSource.ExecuteQuery() at LoadPieceOut()
+Date       : 2025/04/14 12:22:55
+Description: [Microsoft][ODBC 드라이버 관리자] 데이터 원본 이름이 없고 기본 드라이버를 지정하지 않았습니다.
+Exe
