@@ -21,7 +21,21 @@
 #pragma warning(disable: 4996)
 #pragma warning(disable: 4477)
 
-
+struct stRmapInfo
+{
+	CString sProcessCode, sEntireSpeed, sLotStart, sLotRun, sLotEnd;
+	int nLastShot, nCompletedShot;
+	stRmapInfo()
+	{
+		sProcessCode = _T("");
+		sEntireSpeed = _T("");
+		sLotStart = _T("");
+		sLotRun = _T("");
+		sLotEnd = _T("");
+		nLastShot = 0;
+		nCompletedShot = 0;
+	}
+};
 
 struct stResult
 {
@@ -149,6 +163,7 @@ public:
 
 	stYield m_stYield;
 	int m_nStartSerial;
+	stRmapInfo m_stRmapInfo;
 
 // Operations
 public:
@@ -264,6 +279,7 @@ public:
 	CString GetIpPath();
 
 	void ResetYield();
+	int IsOfflineFolder(); // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
 
 	//short ***m_pPnlBufIts;		// DefCode 3D Array : [nSerial-1][nRow][nCol] on File -> [nSerial-1][NodeX][NodeY] : Rotated Cw 90 
 	//int m_nPnlBufIts;			// 메모리에 할당된 총 Shot수
@@ -301,6 +317,7 @@ public:
 	BOOL WriteLastRmapInfoOnOffline();
 	int GetFirstShotFromPcr();
 	int GetLastShotFromPcr();
+	BOOL GetLastRmapInfo();
 
 // Overrides
 	// ClassWizard generated virtual function overrides

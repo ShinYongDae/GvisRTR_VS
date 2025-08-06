@@ -462,6 +462,7 @@ public:
 	BOOL MakeLayerMappingSerial(int nIdx, int nItsSerial);
 
 	int SearchFirstShotOnIts();
+	int IsOfflineFolder(); // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
 	BOOL GetItsSerialInfo(int nItsSerial, BOOL &bDualTest, CString &sLot, CString &sLayerUp, CString &sLayerDn, int nOption=0);		// 내층에서의 ITS 시리얼의 정보
 	BOOL SetItsSerialInfo(int nItsSerial);																							// 내층에서의 ITS 시리얼의 정보
 	//BOOL WriteReelmapIts(int nItsSerial);																							// 내외층 머징된 릴맵 데이타

@@ -66,6 +66,7 @@ CGvisR2R_PunchView::CGvisR2R_PunchView()
 	{
 		m_bRcvSig[i] = FALSE;
 	}
+	m_bOnLine = FALSE;
 
 	m_sAoiUpAlarmReStartMsg = _T(""); m_sAoiDnAlarmReStartMsg = _T("");
 	m_sAoiUpAlarmReTestMsg = _T(""); m_sAoiDnAlarmReTestMsg = _T("");
@@ -33055,18 +33056,20 @@ BOOL CGvisR2R_PunchView::RemakeReelmapFromPcr(CString sModel, CString sLot, CStr
 	pDoc->WorkingInfo.LastJob.sLayerUp = sLayerUp;
 	pDoc->WorkingInfo.LastJob.sLayerDn = sLayerDn;
 
+	BOOL bOnLine = FALSE;
 	int nOffline = IsOfflineFolder(); // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
 
 	if (nOffline == 0)
 	{
-		sMsg.Format(_T("OFFLINE 폴더가 존재하지 않습니다."));
-		pView->MsgBox(sMsg);
-		return FALSE;
+		bOnLine = TRUE;
+		//sMsg.Format(_T("OFFLINE 폴더가 존재하지 않습니다."));
+		//pView->MsgBox(sMsg);
+		//return FALSE;
 	}
 
 	//CopyRmapToOffline(nOffline);
 
-	StartThreadRemakeRmapFromPcr();
+	StartThreadRemakeRmapFromPcr(bOnLine);
 
 	int nLastShot = GetLastShotFromPcr(nOffline);
 
@@ -33075,15 +33078,25 @@ BOOL CGvisR2R_PunchView::RemakeReelmapFromPcr(CString sModel, CString sLot, CStr
 		bDualTest = TRUE;
 		ResetMkInfo(2); // 0 : AOI-Up , 1 : AOI-Dn , 2 : AOI-UpDn
 	}
-	else
+	else if(nOffline & 0x01)
 	{
 		bDualTest = FALSE;
 		ResetMkInfo(0); // 0 : AOI-Up , 1 : AOI-Dn , 2 : AOI-UpDn
 	}
+	else
+	{
+		if(bDualTest)
+			ResetMkInfo(2); // 0 : AOI-Up , 1 : AOI-Dn , 2 : AOI-UpDn
+		else
+			ResetMkInfo(0); // 0 : AOI-Up , 1 : AOI-Dn , 2 : AOI-UpDn
+	}
 
 	ClrDispMsg();
 
-	RemakeRmapFromPcr(nLastShot, nOffline);
+	if (bOnLine)
+		RemakeRmapFromPcr(nLastShot, bDualTest ? 2 : 0);
+	else
+		RemakeRmapFromPcr(nLastShot, nOffline);
 
 	StopThreadRemakeRmapFromPcr();
 
@@ -33098,243 +33111,6 @@ BOOL CGvisR2R_PunchView::RemakeReelmapFromPcr(CString sModel, CString sLot, CStr
 	}
 
 	return TRUE;
-
-	/*
-	CString sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_UP);
-
-	FILE *fp = NULL;
-	char FileName[MAX_PATH];
-	CString strFileName, strPathName;
-	CFileFind findfile;
-	int nStripNumY, nPieceNumPerStrip;
-
-	int i, nLastShot, nPnl, nRow, nCol, nDefCode, nCompletedShot;
-	CString sPnl, sRow, sVal;
-	TCHAR sep[] = { _T(",/;\r\n\t") };
-	TCHAR szData[MAX_PATH];
-
-	if (!findfile.FindFile(sPath))
-	{
-		sMsg.Format(_T("Reelmap이 존재하지 않습니다.\r\n%s"), sPath);
-		pView->MsgBox(sMsg);
-		return FALSE;
-	}
-
-	CString sProcessCode, sEntireSpeed, sLotRun, sLotEnd;
-	
-	if (0 < ::GetPrivateProfileString(_T("Info"), _T("Completed Shot"), NULL, szData, sizeof(szData), sPath))
-		nCompletedShot = _tstoi(szData);
-	else
-		nCompletedShot = 0; // Failed.
-	
-	if (0 < ::GetPrivateProfileString(_T("Info"), _T("Marked Shot"), NULL, szData, sizeof(szData), sPath))
-		nLastShot = _tstoi(szData);
-	else
-	{
-		nLastShot = 0; // Failed.
-		pView->MsgBox(_T("릴맵에 Marked Shot 정보가 없습니다."));
-		return FALSE;
-	}
-
-	// 공종코드
-	if (0 < ::GetPrivateProfileString(_T("Info"), _T("Process Code"), NULL, szData, sizeof(szData), sPath))
-		sProcessCode = CString(szData);
-	else
-		sProcessCode = _T("");
-
-	// 속도
-	if (0 < ::GetPrivateProfileString(_T("Info"), _T("Entire Speed"), NULL, szData, sizeof(szData), sPath))
-		sEntireSpeed = CString(szData);
-	else
-		sEntireSpeed = _T("0.0");
-
-	if (0 < ::GetPrivateProfileString(_T("Info"), _T("Lot Run"), NULL, szData, sizeof(szData), sPath))
-		sLotRun = CString(szData);
-	else
-		sLotRun = _T("");
-
-	if (0 < ::GetPrivateProfileString(_T("Info"), _T("Lot End"), NULL, szData, sizeof(szData), sPath))
-		sLotEnd = CString(szData);
-	else
-		sLotEnd = _T("");
-
-
-	CString sFile = _T(""), sUpPath = _T(""), sDnPath = _T(""), sRmapUpPath = sPath, sRmapDnPath;
-
-	int nPos = sRmapUpPath.ReverseFind('\\');
-	if (nPos != -1)
-	{
-		sFile = sRmapUpPath.Right(sRmapUpPath.GetLength() - nPos - 1);
-		sRmapUpPath.Delete(nPos, sRmapUpPath.GetLength() - nPos);
-	}
-
-
-	DeleteFile(sPath);
-	sPath = pDoc->m_pReelMapUp->GetYieldPath(RMAP_UP);
-	DeleteFile(sPath);
-	
-	sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_DN);
-	if (findfile.FindFile(sPath))
-	{
-		bDualTest = TRUE;
-		sRmapDnPath = sPath;
-
-		DeleteFile(sPath);
-		sPath = pDoc->m_pReelMapUp->GetYieldPath(RMAP_DN);
-		DeleteFile(sPath);
-
-		sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_ALLUP);
-		if (findfile.FindFile(sPath))
-		{
-			DeleteFile(sPath);
-			sPath = pDoc->m_pReelMapUp->GetYieldPath(RMAP_ALLUP);
-			DeleteFile(sPath);
-		}
-
-		sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_ALLDN);
-		if (findfile.FindFile(sPath))
-		{
-			DeleteFile(sPath);
-			sPath = pDoc->m_pReelMapUp->GetYieldPath(RMAP_ALLDN);
-			DeleteFile(sPath);
-		}
-
-		nPos = sRmapDnPath.ReverseFind('\\');
-		if (nPos != -1)
-		{
-			sFile = sRmapDnPath.Right(sRmapDnPath.GetLength() - nPos - 1);
-			sRmapDnPath.Delete(nPos, sRmapDnPath.GetLength() - nPos);
-		}
-
-
-		ResetMkInfo(2); // 0 : AOI-Up , 1 : AOI-Dn , 2 : AOI-UpDn
-	}
-	else
-	{
-		ResetMkInfo(0); // 0 : AOI-Up , 1 : AOI-Dn , 2 : AOI-UpDn
-		bDualTest = FALSE;
-	}
-
-	ClrDispMsg();
-	double dProgressRatio = 0.0;
-	int nProgress = 0, nSerial = 0;
-	CDlgProgress dlg;
-	sVal.Format(_T("On Remaking Reelmap from PCR."));
-	dlg.Create(sVal);
-	dlg.SetRange(0, 100);
-	dlg.SetPos(1);
-
-	for (nPnl = 0; nPnl < nLastShot; nPnl++)
-	{
-		dProgressRatio = double(nPnl + 1) / double(nLastShot) * 100.0;
-		nProgress = int(dProgressRatio);
-		dlg.SetPos(nProgress);
-
-		nSerial = nPnl + 1;
-		sUpPath.Format(_T("%s\\%04d.pcr"), sRmapUpPath, nSerial);
-
-		if (findfile.FindFile(sUpPath))
-		{
-			pDoc->LoadPcrUp(sUpPath);
-
-			if (bDualTest)
-			{
-				sDnPath.Format(_T("%s\\%04d.pcr"), sRmapDnPath, nSerial);
-				if (findfile.FindFile(sDnPath))
-				{
-					pDoc->LoadPcrDn(sDnPath);
-					pDoc->LoadPcrAllUp(sDnPath);
-					//pDoc->LoadPcrAllDn(sDnPath);
-
-					// 시리얼파일의 정보로 릴맵을 만듬 
-					if (pDoc->m_pReelMapUp)
-						pDoc->m_pReelMapUp->Write(nSerial); // [0]:AOI-Up , [1]:AOI-Dn , [2]:AOI-AllUp , [3]:AOI-AllDn
-					if (pDoc->m_pReelMapDn)
-						pDoc->m_pReelMapDn->Write(nSerial); // [0]:AOI-Up , [1]:AOI-Dn , [2]:AOI-AllUp , [3]:AOI-AllDn
-					if (pDoc->m_pReelMapAllUp)
-						pDoc->m_pReelMapAllUp->Write(nSerial); // [0]:AOI-Up , [1]:AOI-Dn , [2]:AOI-AllUp , [3]:AOI-AllDn
-					//if (pDoc->m_pReelMapAllDn)
-					//	pDoc->m_pReelMapAllDn->Write(nSerial); // [0]:AOI-Up , [1]:AOI-Dn , [2]:AOI-AllUp , [3]:AOI-AllDn
-
-					pDoc->SetLastSerial(nSerial);
-
-					//pDoc->UpdateYieldUp(nSerial);
-					//pDoc->UpdateYieldDn(nSerial);
-					//pDoc->UpdateYieldAllUp(nSerial);
-					//pDoc->UpdateYieldAllDn(nSerial);
-
-					//UpdateReelmapYieldUp();
-					//UpdateReelmapYieldDn();
-					//UpdateReelmapYieldAllUp();
-					//UpdateReelmapYieldAllDn();
-				}
-				else
-				{
-					sMsg.Format(_T("하면의 PCR파일이 존재하지 않습니다.\r\n%s"), sDnPath);
-					pView->MsgBox(sMsg);
-					return FALSE;
-				}
-			}
-			else
-			{
-				//UpdateReelmap(nSerial); // 시리얼파일의 정보로 릴맵을 만듬 
-				if (pDoc->m_pReelMapUp)
-					pDoc->m_pReelMapUp->Write(nSerial); // [0]:AOI-Up , [1]:AOI-Dn , [2]:AOI-AllUp , [3]:AOI-AllDn
-
-				pDoc->SetLastSerial(nSerial);
-
-				//pDoc->UpdateYieldUp(nSerial);
-			}
-		}
-	}
-
-	sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_UP);
-	::WritePrivateProfileString(_T("Info"), _T("Process Code"), sProcessCode, sPath);
-	::WritePrivateProfileString(_T("Info"), _T("Entire Speed"), sEntireSpeed, sPath);
-	::WritePrivateProfileString(_T("Info"), _T("Lot Run"), sLotRun, sPath);
-	::WritePrivateProfileString(_T("Info"), _T("Lot End"), sLotEnd, sPath);
-	sVal.Format(_T("%d"), nLastShot);
-	::WritePrivateProfileString(_T("Info"), _T("End Serial"), sVal, sPath);
-
-	if (bDualTest)
-	{
-		sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_DN);
-		::WritePrivateProfileString(_T("Info"), _T("Process Code"), sProcessCode, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Entire Speed"), sEntireSpeed, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Lot Run"), sLotRun, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Lot End"), sLotEnd, sPath);
-		sVal.Format(_T("%d"), nLastShot);
-		::WritePrivateProfileString(_T("Info"), _T("End Serial"), sVal, sPath);
-
-		sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_ALLUP);
-		::WritePrivateProfileString(_T("Info"), _T("Process Code"), sProcessCode, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Entire Speed"), sEntireSpeed, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Lot Run"), sLotRun, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Lot End"), sLotEnd, sPath);
-		sVal.Format(_T("%d"), nLastShot);
-		::WritePrivateProfileString(_T("Info"), _T("End Serial"), sVal, sPath);
-
-		sPath = pDoc->m_pReelMapUp->GetRmapPath(RMAP_ALLDN);
-		::WritePrivateProfileString(_T("Info"), _T("Process Code"), sProcessCode, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Entire Speed"), sEntireSpeed, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Lot Run"), sLotRun, sPath);
-		::WritePrivateProfileString(_T("Info"), _T("Lot End"), sLotEnd, sPath);
-		sVal.Format(_T("%d"), nLastShot);
-		::WritePrivateProfileString(_T("Info"), _T("End Serial"), sVal, sPath);
-	}
-
-	dlg.SetPos(100);
-	dlg.DestroyWindow();
-
-	if (m_pDlgMenu05)
-	{
-		int nIndex = m_pDlgMenu05->GetIdxTopLayer();
-		if (nIndex > -1)
-		{
-			m_pDlgMenu05->SelchangeComboLayer(nIndex);
-		}
-	}
-	*/
 }
 
 int CGvisR2R_PunchView::IsOfflineFolder() // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
@@ -33375,8 +33151,10 @@ int CGvisR2R_PunchView::IsOfflineFolder() // 0 : Not exist, 1 : Exist only Up, 2
 	return nRtn;
 }
 
-void CGvisR2R_PunchView::StartThreadRemakeRmapFromPcr()
+void CGvisR2R_PunchView::StartThreadRemakeRmapFromPcr(BOOL bOnLine)
 {
+	m_bOnLine = bOnLine;
+
 	// LoadPcrUpOnOffline
 	if (!m_bThread[39])
 		m_Thread[39].Start(GetSafeHwnd(), this, ThreadProc39);
@@ -33565,6 +33343,14 @@ int CGvisR2R_PunchView::GetLastShotFromPcr(int nOffline)
 			pDoc->WorkingInfo.LastJob.sLotUp,
 			pDoc->WorkingInfo.LastJob.sLayerDn);
 	}
+	else
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\*.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerUp);
+	}
 
 	// 검색할 경로 및 파일
 	// 특정 확장자를 갖는 파일을 검색하고 싶으면 '경로/*.pcr' 등으로 사용
@@ -33646,32 +33432,33 @@ BOOL CGvisR2R_PunchView::RemakeRmapFromPcr(int nLastShot, int nOffline)
 
 		nSerial = nPnl + 1;
 
-		LoadPcrOnOffline(nSerial, nOffline);
-
-		while (m_bTHREAD_LOAD_PCR_UP_OFFLINE || m_bTHREAD_LOAD_PCR_DN_OFFLINE)
+		if (LoadPcrOnOffline(nSerial, nOffline))
 		{
-			Sleep(100);
-		}
+			while (m_bTHREAD_LOAD_PCR_UP_OFFLINE || m_bTHREAD_LOAD_PCR_DN_OFFLINE)
+			{
+				Sleep(100);
+			}
 
-		LoadPcrAllOnOffline(nSerial, nOffline);
+			LoadPcrAllOnOffline(nSerial, nOffline);
 
-		while (m_bTHREAD_LOAD_PCR_ALLUP_OFFLINE || m_bTHREAD_LOAD_PCR_ALLDN_OFFLINE)
-		{
-			Sleep(100);
-		}
+			while (m_bTHREAD_LOAD_PCR_ALLUP_OFFLINE || m_bTHREAD_LOAD_PCR_ALLDN_OFFLINE)
+			{
+				Sleep(100);
+			}
 
-		UpdateRMapOnOffline(nSerial, nOffline);
+			UpdateRMapOnOffline(nSerial, nOffline);
 
-		while (m_bTHREAD_UPDATE_REELMAP_UP_OFFLINE || m_bTHREAD_UPDATE_REELMAP_DN_OFFLINE)
-		{
-			Sleep(100);
-		}
+			while (m_bTHREAD_UPDATE_REELMAP_UP_OFFLINE || m_bTHREAD_UPDATE_REELMAP_DN_OFFLINE)
+			{
+				Sleep(100);
+			}
 
-		UpdateRMapAllOnOffline(nSerial, nOffline);
+			UpdateRMapAllOnOffline(nSerial, nOffline);
 
-		while (m_bTHREAD_UPDATE_REELMAP_ALLUP_OFFLINE || m_bTHREAD_UPDATE_REELMAP_ALLDN_OFFLINE)
-		{
-			Sleep(100);
+			while (m_bTHREAD_UPDATE_REELMAP_ALLUP_OFFLINE || m_bTHREAD_UPDATE_REELMAP_ALLDN_OFFLINE)
+			{
+				Sleep(100);
+			}
 		}
 	}
 
@@ -33716,6 +33503,33 @@ BOOL CGvisR2R_PunchView::LoadPcrOnOffline(int nSerial, int nOffline)
 
 	if (!pDoc->MakeMkDir())
 		return FALSE;
+
+	CString sPath;
+	if (m_bOnLine)
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerUp,
+			nSerial);
+	}
+	else
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerUp,
+			nSerial);
+	}
+
+	// 검색 클래스
+	CFileFind findfile;
+	if (!findfile.FindFile(sPath))
+	{
+		return FALSE;
+	}
 
 	BOOL bDualTest = nOffline & 0x02;
 
@@ -34074,12 +33888,24 @@ void CGvisR2R_PunchView::LoadPcrUpOnOffline()
 {
 	int nSerial = m_nSerialRmapUpdateOnOffline;
 	CString sPath;
-	sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
-		pDoc->WorkingInfo.System.sPathOldFile,
-		pDoc->WorkingInfo.LastJob.sModelUp,
-		pDoc->WorkingInfo.LastJob.sLotUp,
-		pDoc->WorkingInfo.LastJob.sLayerUp,
-		nSerial);
+	if (m_bOnLine)
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerUp,
+			nSerial);
+	}
+	else
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerUp,
+			nSerial);
+	}
 
 	// 검색 클래스
 	CFileFind findfile;
@@ -34094,12 +33920,24 @@ void CGvisR2R_PunchView::LoadPcrDnOnOffline()
 {
 	int nSerial = m_nSerialRmapUpdateOnOffline;
 	CString sPath;
-	sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
-		pDoc->WorkingInfo.System.sPathOldFile,
-		pDoc->WorkingInfo.LastJob.sModelUp,
-		pDoc->WorkingInfo.LastJob.sLotUp,
-		pDoc->WorkingInfo.LastJob.sLayerDn,
-		nSerial);
+	if (m_bOnLine)
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerDn,
+			nSerial);
+	}
+	else
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerDn,
+			nSerial);
+	}
 
 	// 검색 클래스
 	CFileFind findfile;
@@ -34114,12 +33952,24 @@ void CGvisR2R_PunchView::LoadPcrUpAllOnOffline()
 {
 	int nSerial = m_nSerialRmapUpdateOnOffline;
 	CString sPath;
-	sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
-		pDoc->WorkingInfo.System.sPathOldFile,
-		pDoc->WorkingInfo.LastJob.sModelUp,
-		pDoc->WorkingInfo.LastJob.sLotUp,
-		pDoc->WorkingInfo.LastJob.sLayerUp,
-		nSerial);
+	if (m_bOnLine)
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerUp,
+			nSerial);
+	}
+	else
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerUp,
+			nSerial);
+	}
 
 	// 검색 클래스
 	CFileFind findfile;
@@ -34134,12 +33984,24 @@ void CGvisR2R_PunchView::LoadPcrDnAllOnOffline()
 {
 	int nSerial = m_nSerialRmapUpdateOnOffline;
 	CString sPath;
-	sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
-		pDoc->WorkingInfo.System.sPathOldFile,
-		pDoc->WorkingInfo.LastJob.sModelUp,
-		pDoc->WorkingInfo.LastJob.sLotUp,
-		pDoc->WorkingInfo.LastJob.sLayerDn,
-		nSerial);
+	if (m_bOnLine)
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerDn,
+			nSerial);
+	}
+	else
+	{
+		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile,
+			pDoc->WorkingInfo.LastJob.sModelUp,
+			pDoc->WorkingInfo.LastJob.sLotUp,
+			pDoc->WorkingInfo.LastJob.sLayerDn,
+			nSerial);
+	}
 
 	// 검색 클래스
 	CFileFind findfile;
@@ -34304,20 +34166,20 @@ BOOL CGvisR2R_PunchView::WriteLastRmapInfo(int nLastShot, int nOffline)
 	if (!pDoc->MakeMkDir())
 		return FALSE;
 
+	BOOL bDualTest = pDoc->WorkingInfo.LastJob.bDualTest;
 	m_nLastShotOnOffline = nLastShot;
-	BOOL bDualTest = nOffline & 0x02;
-	//m_bTHREAD_WRITE_LAST_INFO_REELMAP_UP_OFFLINE = TRUE;
+
+	if (!m_bOnLine)
+		bDualTest = nOffline & 0x02;
+
 	WriteLastRMapUpInfoOnOffline();
 	if (bDualTest)
 	{
 		WriteLastRMapDnInfoOnOffline();
 		WriteLastRMapUpAllInfoOnOffline();
 		WriteLastRMapDnAllInfoOnOffline();
-		//m_bTHREAD_WRITE_LAST_INFO_REELMAP_DN_OFFLINE = TRUE;
-		//m_bTHREAD_WRITE_LAST_INFO_REELMAP_ALLUP_OFFLINE = TRUE;
-		//m_bTHREAD_WRITE_LAST_INFO_REELMAP_ALLDN_OFFLINE = TRUE;
 	}
-
+	
 	return TRUE;
 }
 
@@ -34395,7 +34257,10 @@ void CGvisR2R_PunchView::DeleteReelmapOnOffline()
 	if (!sPath.IsEmpty())
 	{
 		if (findfile.FindFile(sPath))
+		{
+			pDoc->m_pReelMapUp->GetLastRmapInfo();
 			DeleteFile(sPath);
+		}
 		sPath = _T("");
 	}
 
@@ -34404,7 +34269,10 @@ void CGvisR2R_PunchView::DeleteReelmapOnOffline()
 	if (!sPath.IsEmpty())
 	{
 		if (findfile.FindFile(sPath))
+		{
+			pDoc->m_pReelMapDn->GetLastRmapInfo();
 			DeleteFile(sPath);
+		}
 		sPath = _T("");
 	}
 
@@ -34413,7 +34281,10 @@ void CGvisR2R_PunchView::DeleteReelmapOnOffline()
 	if (!sPath.IsEmpty())
 	{
 		if (findfile.FindFile(sPath))
+		{
+			pDoc->m_pReelMapAllUp->GetLastRmapInfo();
 			DeleteFile(sPath);
+		}
 		sPath = _T("");
 	}
 
@@ -34422,7 +34293,10 @@ void CGvisR2R_PunchView::DeleteReelmapOnOffline()
 	if (!sPath.IsEmpty())
 	{
 		if (findfile.FindFile(sPath))
+		{
+			pDoc->m_pReelMapAllDn->GetLastRmapInfo();
 			DeleteFile(sPath);
+		}
 		sPath = _T("");
 	}
 }

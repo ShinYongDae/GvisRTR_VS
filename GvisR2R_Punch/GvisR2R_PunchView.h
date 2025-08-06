@@ -222,7 +222,6 @@ class CGvisR2R_PunchView : public CFormView
 	double m_dElecChkVal;
 	BOOL m_bContEngraveF;
 
-
 	void InitMyMsg();
 	void CloseMyMsg();
 
@@ -342,7 +341,7 @@ class CGvisR2R_PunchView : public CFormView
 	void DoAtuoGet2dReadStSignal();
 
 	void DoAutoSetFdOffsetEngrave();
-
+	int IsOfflineFolder(); // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
 
 protected: // serialization에서만 만들어집니다.
 	CGvisR2R_PunchView();
@@ -540,6 +539,7 @@ public:
 	int m_nSerialRmapInnerUpdate;
 
 	BOOL m_bIsBuf[2]; // [0]: AOI-Up , [1]: AOI-Dn
+	BOOL m_bOnLine;
 
 
 // 작업입니다.
@@ -1270,9 +1270,8 @@ public:
 	BOOL GetMkStSignal();
 	void SetMkStSignal();
 	void LoadSerial();
-
-	int IsOfflineFolder(); // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
-	void StartThreadRemakeRmapFromPcr();
+	
+	void StartThreadRemakeRmapFromPcr(BOOL bOnLine = FALSE);
 	void CopyRmapToOffline(int nOffline);
 	int GetLastShotFromPcr(int nOffline);
 	BOOL RemakeRmapFromPcr(int nLastShot, int nOffline);

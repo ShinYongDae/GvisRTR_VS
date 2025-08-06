@@ -6311,6 +6311,7 @@ BOOL CReelMap::MakeHeader(CString sPath)
 	fprintf(fp, "\n");
 	fprintf(fp, "Marked Shot=\n");
 	fprintf(fp, "Marked Date=\n");
+	fprintf(fp, "Completed Shot=\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "// < 수율 정보 > \n");
@@ -6450,6 +6451,7 @@ BOOL CReelMap::MakeItsReelmapHeader()
 	fprintf(fp, "\n");
 	fprintf(fp, "Marked Shot=\n");
 	fprintf(fp, "Marked Date=\n");
+	fprintf(fp, "Completed Shot=\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "\n");
 	fprintf(fp, "// < 수율 정보 > \n");
@@ -8592,47 +8594,130 @@ CString CReelMap::GetRmapPathOnOffline(int nRmap)
 	CString sPath = _T("");
 	CString Path[5], str;
 
-	switch (nRmap)
+	if (IsOfflineFolder())
 	{
-	case RMAP_UP:
-		str = _T("ReelMapDataUp.txt");
-		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"), 
-			pDoc->WorkingInfo.System.sPathOldFile,
-			pDoc->WorkingInfo.LastJob.sModelUp,
-			pDoc->WorkingInfo.LastJob.sLotUp,
-			pDoc->WorkingInfo.LastJob.sLayerUp,
-			str);
-		break;
-	case RMAP_DN:
-		str = _T("ReelMapDataDn.txt");
-		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"), 
-			pDoc->WorkingInfo.System.sPathOldFile,
-			pDoc->WorkingInfo.LastJob.sModelUp,
-			pDoc->WorkingInfo.LastJob.sLotUp,
-			pDoc->WorkingInfo.LastJob.sLayerDn,
-			str);
-		break;
-	case RMAP_ALLUP:
-		str = _T("ReelMapDataAll.txt");
-		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"),
-			pDoc->WorkingInfo.System.sPathOldFile,
-			pDoc->WorkingInfo.LastJob.sModelUp,
-			pDoc->WorkingInfo.LastJob.sLotUp,
-			pDoc->WorkingInfo.LastJob.sLayerUp,
-			str);
-		break;
-	case RMAP_ALLDN:
-		str = _T("ReelMapDataAll.txt");
-		sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"), 
-			pDoc->WorkingInfo.System.sPathOldFile,
-			pDoc->WorkingInfo.LastJob.sModelUp,
-			pDoc->WorkingInfo.LastJob.sLotUp,
-			pDoc->WorkingInfo.LastJob.sLayerDn,
-			str);
-		break;
+		switch (nRmap)
+		{
+		case RMAP_UP:
+			str = _T("ReelMapDataUp.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerUp,
+				str);
+			break;
+		case RMAP_DN:
+			str = _T("ReelMapDataDn.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerDn,
+				str);
+			break;
+		case RMAP_ALLUP:
+			str = _T("ReelMapDataAll.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerUp,
+				str);
+			break;
+		case RMAP_ALLDN:
+			str = _T("ReelMapDataAll.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerDn,
+				str);
+			break;
+		}
+	}
+	else
+	{
+		switch (nRmap)
+		{
+		case RMAP_UP:
+			str = _T("ReelMapDataUp.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerUp,
+				str);
+			break;
+		case RMAP_DN:
+			str = _T("ReelMapDataDn.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerDn,
+				str);
+			break;
+		case RMAP_ALLUP:
+			str = _T("ReelMapDataAll.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerUp,
+				str);
+			break;
+		case RMAP_ALLDN:
+			str = _T("ReelMapDataAll.txt");
+			sPath.Format(_T("%s%s\\%s\\%s\\%s"),
+				pDoc->WorkingInfo.System.sPathOldFile,
+				pDoc->WorkingInfo.LastJob.sModelUp,
+				pDoc->WorkingInfo.LastJob.sLotUp,
+				pDoc->WorkingInfo.LastJob.sLayerDn,
+				str);
+			break;
+		}
 	}
 
 	return sPath;
+}
+
+int CReelMap::IsOfflineFolder() // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
+{
+	int nRtn = 0;
+	CString sPath, str;
+	BOOL bWorking;
+
+	//검색 클래스
+	CFileFind finder;
+
+	str = _T("OFFLINE");
+	sPath.Format(_T("%s%s\\%s\\%s\\%s\\*.*"), pDoc->WorkingInfo.System.sPathOldFile,
+		pDoc->WorkingInfo.LastJob.sModelUp,
+		pDoc->WorkingInfo.LastJob.sLotUp,
+		pDoc->WorkingInfo.LastJob.sLayerUp,
+		str);
+
+	//CFileFind는 파일, 디렉터리가 존재하면 TRUE 를 반환함 
+	bWorking = finder.FindFile(sPath);
+
+	if (bWorking)
+		nRtn |= 0x01;
+
+	str = _T("OFFLINE");
+	sPath.Format(_T("%s%s\\%s\\%s\\%s\\*.*"), pDoc->WorkingInfo.System.sPathOldFile,
+		pDoc->WorkingInfo.LastJob.sModelDn,
+		pDoc->WorkingInfo.LastJob.sLotDn,
+		pDoc->WorkingInfo.LastJob.sLayerDn,
+		str);
+
+	//CFileFind는 파일, 디렉터리가 존재하면 TRUE 를 반환함 
+	bWorking = finder.FindFile(sPath);
+
+	if (bWorking)
+		nRtn |= 0x02;
+
+	return nRtn;
 }
 
 BOOL CReelMap::WriteOnOffline(int nSerial)
@@ -8870,13 +8955,12 @@ BOOL CReelMap::WriteOnOffline(int nSerial)
 	return TRUE;
 }
 
-BOOL CReelMap::WriteLastRmapInfoOnOffline()
+BOOL CReelMap::GetLastRmapInfo()
 {
 	CFileFind findfile;
-
 	CString sVal, sMsg, sPath;
-
 	sPath = GetRmapPath(m_nLayer);
+
 	if (!findfile.FindFile(sPath))
 	{
 		sMsg.Format(_T("Reelmap이 존재하지 않습니다.\r\n%s"), sPath);
@@ -8929,6 +9013,90 @@ BOOL CReelMap::WriteLastRmapInfoOnOffline()
 	else
 		sLotEnd = _T("");
 
+	m_stRmapInfo.sProcessCode = sProcessCode;
+	m_stRmapInfo.sEntireSpeed = sEntireSpeed;
+	m_stRmapInfo.sLotStart = sLotStart;
+	m_stRmapInfo.sLotRun = sLotRun;
+	m_stRmapInfo.sLotEnd = sLotEnd;
+	m_stRmapInfo.nLastShot = nLastShot;
+	m_stRmapInfo.nCompletedShot = nCompletedShot;
+
+	return TRUE;
+}
+
+BOOL CReelMap::WriteLastRmapInfoOnOffline()
+{
+	CFileFind findfile;
+
+	CString sVal, sMsg, sPath;
+
+	CString sProcessCode, sEntireSpeed, sLotStart, sLotRun, sLotEnd;
+	int nLastShot, nCompletedShot;
+	TCHAR szData[MAX_PATH];
+
+	if (!pView->m_bOnLine)
+	{
+		sPath = GetRmapPath(m_nLayer);
+		if (!findfile.FindFile(sPath))
+		{
+			sMsg.Format(_T("Reelmap이 존재하지 않습니다.\r\n%s"), sPath);
+			pView->MsgBox(sMsg);
+			return FALSE;
+		}
+
+		if (0 < ::GetPrivateProfileString(_T("Info"), _T("Completed Shot"), NULL, szData, sizeof(szData), sPath))
+			nCompletedShot = _tstoi(szData);
+		else
+			nCompletedShot = 0; // Failed.
+
+		if (0 < ::GetPrivateProfileString(_T("Info"), _T("Marked Shot"), NULL, szData, sizeof(szData), sPath))
+			nLastShot = _tstoi(szData);
+		else
+		{
+			nLastShot = 0; // Failed.
+			pView->MsgBox(_T("릴맵에 Marked Shot 정보가 없습니다."));
+			return FALSE;
+		}
+
+		// 공종코드
+		if (0 < ::GetPrivateProfileString(_T("Info"), _T("Process Code"), NULL, szData, sizeof(szData), sPath))
+			sProcessCode = CString(szData);
+		else
+			sProcessCode = _T("");
+
+		// 속도
+		if (0 < ::GetPrivateProfileString(_T("Info"), _T("Entire Speed"), NULL, szData, sizeof(szData), sPath))
+			sEntireSpeed = CString(szData);
+		else
+			sEntireSpeed = _T("0.0");
+
+		if (0 < ::GetPrivateProfileString(_T("Info"), _T("Lot Start"), NULL, szData, sizeof(szData), sPath))
+			sLotStart = CString(szData);
+		else
+			sLotStart = _T("");
+
+		if (0 < ::GetPrivateProfileString(_T("Info"), _T("Lot Run"), NULL, szData, sizeof(szData), sPath))
+			sLotRun = CString(szData);
+		else
+			sLotRun = _T("");
+
+		if (0 < ::GetPrivateProfileString(_T("Info"), _T("Lot End"), NULL, szData, sizeof(szData), sPath))
+			sLotEnd = CString(szData);
+		else
+			sLotEnd = _T("");
+	}
+	else
+	{
+		sProcessCode = m_stRmapInfo.sProcessCode;
+		sEntireSpeed = m_stRmapInfo.sEntireSpeed;
+		sLotStart = m_stRmapInfo.sLotStart;
+		sLotRun = m_stRmapInfo.sLotRun;
+		sLotEnd = m_stRmapInfo.sLotEnd;
+		nLastShot = m_stRmapInfo.nLastShot;
+		nCompletedShot = m_stRmapInfo.nCompletedShot;
+		if (!nCompletedShot && nLastShot) nCompletedShot = nLastShot;
+		else if (nCompletedShot && !nLastShot) nLastShot = nCompletedShot;
+	}
 
 	int k, i;
 	CString strMenu, strItem, sCode, sDefNum, strData;
@@ -8988,6 +9156,8 @@ BOOL CReelMap::WriteLastRmapInfoOnOffline()
 	::WritePrivateProfileString(_T("Info"), _T("Start Serial"), sVal, sPath);
 	sVal.Format(_T("%d"), GetLastShotFromPcr());
 	::WritePrivateProfileString(_T("Info"), _T("End Serial"), sVal, sPath);
+	::WritePrivateProfileString(_T("Info"), _T("Completed Shot"), sVal, sPath);
+	//::WritePrivateProfileString(_T("Info"), _T("Marked Shot"), sVal, sPath);
 
 	return TRUE;
 }
