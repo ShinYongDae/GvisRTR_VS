@@ -13130,8 +13130,14 @@ int CGvisR2R_PunchDoc::GetItsDefCode(int nDefCode)
 		return m_nSapp3Code[SAPP3_SPACE_EXTRA_PROTRUSION];
 	else if (sDefCode == _T("W"))	//24 Wide = 160 -> m_nSapp3Code[SAPP3_SPACE_EXTRA_PROTRUSION]
 		return m_nSapp3Code[SAPP3_SPACE_EXTRA_PROTRUSION];
-	else if (sDefCode == _T("?"))	//25 Light = 160 -> m_nSapp3Code[SAPP3_SPACE_EXTRA_PROTRUSION]
-		return m_nSapp3Code[SAPP3_SPACE_EXTRA_PROTRUSION];
+	else if (sDefCode == _T("F"))	//25 FixedDefect = 0
+		return 0;
+	else if (sDefCode == _T("Y"))	//26 VH.Size = 379
+		return m_nSapp3Code[SAPP3_VHOPEN_NOVH_VHALIGN_VHDEF];
+	else if (sDefCode == _T("Z"))	//27 VHEdge = 379
+		return m_nSapp3Code[SAPP3_VHOPEN_NOVH_VHALIGN_VHDEF];
+	else if (sDefCode == _T("?"))	//28 Light = 0
+		return 0;
 
 	return 0;
 }
