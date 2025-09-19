@@ -152,6 +152,8 @@ void CDataMarking::Init(int nSerial, int nTot) // m_nIdx : From 0 to nTot.....
 		{
 			m_arDefType[nR][nC] = -1;
 			m_arPcrLineNum[nR][nC] = -1;
+			m_arDefTypeForIts[nR][nC] = -1;
+			m_arPcrLineNumForIts[nR][nC] = -1;
 		}
 
 	m_MkOffset.x = 0;

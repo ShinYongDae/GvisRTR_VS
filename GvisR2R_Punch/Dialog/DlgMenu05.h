@@ -98,6 +98,8 @@ public:
 	int GetIdxTopLayer();
 	void SelchangeComboLayer(int nIndex);
 
+	int GetLayer(CString strLayer); // RMAP_NONE = -1, RMAP_UP = 0, RMAP_DN = 1
+
 
 // Dialog Data
 	//{{AFX_DATA(CDlgMenu05)

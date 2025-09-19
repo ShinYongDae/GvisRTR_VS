@@ -538,15 +538,6 @@ void CDlgMenu05::ModifyLayerData()
 		((CComboBox*)GetDlgItem(IDC_COMBO_LAYER))->InsertString(t, strBuf2);
 		((CComboBox*)GetDlgItem(IDC_COMBO_LAYER))->DeleteString(t + 1);
 		t++;
-
-		//if (strBuf2.Find(_T("TOP")) >= 0)
-		//{
-		//	m_sLayerUp = strBuf2;
-		//}
-		//else if (strBuf2.Find(_T("BOTTOM")) >= 0)
-		//{
-		//	m_sLayerDn = strBuf2;
-		//}
 	}
 }
 
@@ -1606,8 +1597,11 @@ void CDlgMenu05::DisplayReelMapUser()
 	sVal.Format(_T("On remaking Reelmap."));
 	dlg.Create(sVal);
 
+	if(pDoc->m_pReelMapUp)
 	pDoc->m_pReelMapUp->m_bThreadAliveRemakeReelmap = FALSE;
+	if(pDoc->m_pReelMapDn)
 	pDoc->m_pReelMapDn->m_bThreadAliveRemakeReelmap = FALSE;
+	if(pDoc->m_pReelMapAllUp)
 	pDoc->m_pReelMapAllUp->m_bThreadAliveRemakeReelmap = FALSE;
 	
 //	pView->MyMsgBox(_T("On converting Reelmap....."));
@@ -1656,8 +1650,11 @@ void CDlgMenu05::DisplayReelMapUser()
 
 	if(bDualTest)
 	{
+		if(pDoc->m_pReelMapUp)
 		bSuccess[0] = pDoc->m_pReelMapUp->m_bRtnThreadRemakeReelmap;	
+		if(pDoc->m_pReelMapDn)
 		bSuccess[1] = pDoc->m_pReelMapDn->m_bRtnThreadRemakeReelmap;	
+		if(pDoc->m_pReelMapAllUp)
 		bSuccess[2] = pDoc->m_pReelMapAllUp->m_bRtnThreadRemakeReelmap;	
 
 		if(!bSuccess[0] || !bSuccess[1] || !bSuccess[2])
@@ -2805,118 +2802,196 @@ void CDlgMenu05::OnBtnSave4()
 		MakeIts();
 }
 
+//void CDlgMenu05::MakeIts()
+//{
+//	CString sItsPath = pDoc->WorkingInfo.System.sPathIts;
+//
+//	if (sItsPath.IsEmpty())
+//		return;
+//
+//	int pos = sItsPath.ReverseFind('\\');
+//	if (pos != -1)
+//		sItsPath.Delete(pos, sItsPath.GetLength() - pos);
+//
+//	if (!pDoc->DirectoryExists(sItsPath))
+//		CreateDirectory(sItsPath, NULL);
+//
+//	CFileFind cFile;
+//	CString sPathPcr;
+//
+//	sPathPcr.Format(_T("%s%s\\%s\\%s\\OFFLINE\\*.pcr"), 
+//		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
+//
+//	BOOL bExist = cFile.FindFile(sPathPcr);
+//	if (!bExist)
+//	{
+//		sPathPcr.Format(_T("%s%s\\%s\\%s\\*.pcr"),
+//			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
+//
+//		bExist = cFile.FindFile(sPathPcr);
+//		if (!bExist)
+//		{
+//			return; // pcr파일이 존재하지 않음.
+//		}
+//	}
+//
+//	int nLayer = -1; // RMAP_NONE = -1, RMAP_UP = 0, RMAP_DN = 1
+//	if (m_sLayer == m_sLayerUp)
+//	{
+//		if (pDoc->GetTestMode() == MODE_INNER)
+//			nLayer = RMAP_INNER_UP;
+//		else
+//			nLayer = RMAP_UP;
+//	}
+//	else if (m_sLayer == m_sLayerDn)
+//	{
+//		if (pDoc->GetTestMode() == MODE_INNER)
+//			nLayer = RMAP_INNER_DN;
+//		else
+//			nLayer = RMAP_DN;
+//	}
+//
+//
+//	pDoc->m_Master[0].Init(pDoc->WorkingInfo.System.sPathCamSpecDir, m_sModel, m_sLayer);
+//	pDoc->m_Master[0].LoadMstInfo();
+//
+//
+//	int nPos, nSerial;
+//
+//	CString sFileName, sSerial;
+//	CString sNewName;
+//	BOOL bNewModel;
+//	int nNewLot;
+//
+//	int nTot = 0;
+//	while (bExist)
+//	{
+//		bExist = cFile.FindNextFile();
+//		if (cFile.IsDots()) continue;
+//		if (!cFile.IsDirectory())
+//		{
+//			sFileName = cFile.GetFileName();
+//			nPos = sFileName.ReverseFind('.');
+//			if (nPos > 0)
+//				sSerial = sFileName.Left(nPos);
+//
+//			nSerial = _tstoi(sSerial);
+//
+//			if(nLayer == RMAP_UP || nLayer == RMAP_INNER_UP)
+//				LoadPCRUpFromMk(nSerial);
+//			else
+//				LoadPCRDnFromMk(nSerial);
+//
+//			MakeItsFile(nSerial, nLayer);
+//
+//			nTot++;
+//		}
+//	}
+//}
+
 void CDlgMenu05::MakeIts()
 {
-	CString sItsPath = pDoc->WorkingInfo.System.sPathIts;
+	BOOL bDualTest = pDoc->WorkingInfo.LastJob.bDualTest;
+	CString sItsPath = pDoc->GetItsTargetFolderPath();
+	//CString sItsPath = pDoc->WorkingInfo.System.sPathIts;
 
 	if (sItsPath.IsEmpty())
+	{
+		pView->MsgBox(_T("ITS 저장폴더가 정해지지않았습니다."));
 		return;
+	}
 
-	int pos = sItsPath.ReverseFind('\\');
-	if (pos != -1)
-		sItsPath.Delete(pos, sItsPath.GetLength() - pos);
+	//int pos = sItsPath.ReverseFind('\\');
+	//if (pos != -1)
+	//	sItsPath.Delete(pos, sItsPath.GetLength() - pos);
 
 	if (!pDoc->DirectoryExists(sItsPath))
 		CreateDirectory(sItsPath, NULL);
 
-	CFileFind cFile;
-	CString sPathPcr;
+	CFileFind cFile[2];
+	CString sPathPcr[2];
+	CString sMsg;
 
-	sPathPcr.Format(_T("%s%s\\%s\\%s\\OFFLINE\\*.pcr"), 
-		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
+	if (m_sModel.IsEmpty())
+	{
+		pView->MsgBox(_T("Model이 정해지지않았습니다."));
+		return;
+	}
 
-	BOOL bExist = cFile.FindFile(sPathPcr);
+	if (m_sLot.IsEmpty())
+	{
+		pView->MsgBox(_T("Lot가 정해지지않았습니다."));
+		return;
+	}
+
+	if (m_sLayerUp.IsEmpty())
+	{
+		pView->MsgBox(_T("LayerUp이 정해지지않았습니다."));
+		return;
+	}
+	pDoc->WorkingInfo.LastJob.sModelUp = pDoc->WorkingInfo.LastJob.sModelDn = m_sModel;
+	pDoc->WorkingInfo.LastJob.sLotUp = pDoc->WorkingInfo.LastJob.sLotDn = m_sLot;
+	pDoc->WorkingInfo.LastJob.sLayerUp = m_sLayerUp;
+
+	sPathPcr[0].Format(_T("%s%s\\%s\\%s\\OFFLINE\\*.pcr"),
+		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerUp);
+
+	BOOL bExist = cFile[0].FindFile(sPathPcr[0]);
 	if (!bExist)
 	{
-		sPathPcr.Format(_T("%s%s\\%s\\%s\\*.pcr"),
-			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
+		sPathPcr[0].Format(_T("%s%s\\%s\\%s\\*.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerUp);
 
-		bExist = cFile.FindFile(sPathPcr);
+		bExist = cFile[0].FindFile(sPathPcr[0]);
 		if (!bExist)
 		{
+			sMsg.Format(_T("상면 PCR파일이 존재하지않았습니다.\r\n%s"), sPathPcr[0]);
+			pView->MsgBox(sMsg);
 			return; // pcr파일이 존재하지 않음.
 		}
 	}
 
-	int nLayer = -1; // RMAP_NONE = -1, RMAP_UP = 0, RMAP_DN = 1
-	if (m_sLayer == m_sLayerUp)
+	if (bDualTest)
 	{
-		if (pDoc->GetTestMode() == MODE_INNER)
-			nLayer = RMAP_INNER_UP;
-		else
-			nLayer = RMAP_UP;
+		if (m_sLayerDn.IsEmpty())
+		{
+			pView->MsgBox(_T("LayerDn이 정해지지않았습니다."));
+			return;
+		}
+
+		pDoc->WorkingInfo.LastJob.sLayerDn = m_sLayerDn;
+
+		sPathPcr[1].Format(_T("%s%s\\%s\\%s\\OFFLINE\\*.pcr"),
+			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerDn);
+
+		bExist = cFile[1].FindFile(sPathPcr[1]);
+		if (!bExist)
+		{
+			sPathPcr[1].Format(_T("%s%s\\%s\\%s\\*.pcr"),
+				pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerDn);
+
+			bExist = cFile[1].FindFile(sPathPcr[1]);
+			if (!bExist)
+			{
+				sMsg.Format(_T("하면 PCR파일이 존재하지않았습니다.\r\n%s"), sPathPcr[1]);
+				pView->MsgBox(sMsg);
+				return; // pcr파일이 존재하지 않음.
+			}
+		}
 	}
-	else if (m_sLayer == m_sLayerDn)
-	{
-		if (pDoc->GetTestMode() == MODE_INNER)
-			nLayer = RMAP_INNER_DN;
-		else
-			nLayer = RMAP_DN;
-	}
 
-	//CString sPathReelmapUp=_T(""), sPathReelmapDn=_T("");
-	//CString strPath;
-	//
-	//if (pDoc->m_pReelMapUp)
+	int nLayer = GetLayer(m_sLayerUp);
+
+	//if (pDoc->GetTestMode() == MODE_OUTER || pDoc->WorkingInfo.System.bUseDualIts || pDoc->WorkingInfo.System.bUseDual2dIts)
 	//{
-	//	strPath = pDoc->m_pReelMapUp->GetRmapPathOnOffline(RMAP_ALLUP);
-	//	if (!cFile.FindFile(strPath))
+	//	if (!pDoc->IsOfflineFolder()) // 0 : Not exist, 1 : Exist only Up, 2 : Exist only Dn, 3 : Exist Up and Dn
 	//	{
-	//		strPath = pDoc->m_pReelMapUp->GetRmapPathOnOffline(RMAP_UP);
-	//		if (!cFile.FindFile(strPath))
-	//		{
-	//			sPathReelmapUp.Format(_T("%s%s\\%s\\%s\\ReelMapDataUp.txt"),
-	//				pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
-	//			sPathReelmapDn.Format(_T("%s%s\\%s\\%s\\ReelMapDataDn.txt"),
-	//				pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
-	//		}
-	//		else
-	//		{
-	//			sPathReelmapUp = pDoc->m_pReelMapUp->GetRmapPathOnOffline(RMAP_UP);
-	//		}
-	//	}
-	//	else
-	//	{
-	//		sPathReelmapUp = pDoc->m_pReelMapUp->GetRmapPathOnOffline(RMAP_UP);
-	//		sPathReelmapDn = pDoc->m_pReelMapUp->GetRmapPathOnOffline(RMAP_DN);
+	//		pView->MsgBox(_T("OFFLINE 폴더가 없습니다."));
 	//	}
 	//}
-	//else
-	//{
-	//	sPathReelmapUp.Format(_T("%s%s\\%s\\%s\\ReelMapDataUp.txt"),
-	//		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
-	//	sPathReelmapDn.Format(_T("%s%s\\%s\\%s\\ReelMapDataDn.txt"),
-	//		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer);
-	//}
-	//
-	//int nLayer = -1; // RMAP_NONE = -1, RMAP_UP = 0, RMAP_DN = 1
-	//CFileFind cFile2;
-	//bExist = cFile2.FindFile(sPathReelmapUp);
-	//if (bExist)
-	//{
-	//	if (pDoc->GetTestMode() == MODE_INNER)
-	//		nLayer = RMAP_INNER_UP;
-	//	else
-	//		nLayer = RMAP_UP;
-	//}
-	//else
-	//{
-	//	bExist = cFile2.FindFile(sPathReelmapDn);
-	//	if (bExist)
-	//	{
-	//		if (pDoc->GetTestMode() == MODE_INNER)
-	//			nLayer = RMAP_INNER_DN;
-	//		else
-	//			nLayer = RMAP_DN;
-	//	}
-	//	else
-	//		return; // Layer속성의 릴맵이 존재하지 않음.
-	//}
 
-
-	pDoc->m_Master[0].Init(pDoc->WorkingInfo.System.sPathCamSpecDir, m_sModel, m_sLayer);
+	pDoc->m_Master[0].Init(pDoc->WorkingInfo.System.sPathCamSpecDir, m_sModel, m_sLayerUp);
 	pDoc->m_Master[0].LoadMstInfo();
-
 
 	int nPos, nSerial;
 
@@ -2928,25 +3003,58 @@ void CDlgMenu05::MakeIts()
 	int nTot = 0;
 	while (bExist)
 	{
-		bExist = cFile.FindNextFile();
-		if (cFile.IsDots()) continue;
-		if (!cFile.IsDirectory())
+		bExist = cFile[0].FindNextFile();
+		if (cFile[0].IsDots()) continue;
+		if (!cFile[0].IsDirectory())
 		{
-			sFileName = cFile.GetFileName();
+			sFileName = cFile[0].GetFileName();
 			nPos = sFileName.ReverseFind('.');
 			if (nPos > 0)
 				sSerial = sFileName.Left(nPos);
 
 			nSerial = _tstoi(sSerial);
 
-			if(nLayer == RMAP_UP || nLayer == RMAP_INNER_UP)
-				LoadPCRUpFromMk(nSerial);
-			else
-				LoadPCRDnFromMk(nSerial);
+			if (LoadPCRUpFromMk(nSerial) == 1)
+			{
+				MakeItsFile(nSerial, nLayer);
+				nTot++;
 
-			MakeItsFile(nSerial, nLayer);
+				//if(nLayer == RMAP_UP || nLayer == RMAP_INNER_UP)
+				//	LoadPCRUpFromMk(nSerial);
+				//else
+				//	LoadPCRDnFromMk(nSerial);
+				//MakeItsFile(nSerial, nLayer);
+			}
+		}
+	}
 
-			nTot++;
+	nLayer = GetLayer(m_sLayerDn);
+	nTot = 0;
+	bExist = cFile[0].FindFile(sPathPcr[1]);
+	while (bExist)
+	{
+		bExist = cFile[1].FindNextFile();
+		if (cFile[1].IsDots()) continue;
+		if (!cFile[1].IsDirectory())
+		{
+			sFileName = cFile[1].GetFileName();
+			nPos = sFileName.ReverseFind('.');
+			if (nPos > 0)
+				sSerial = sFileName.Left(nPos);
+
+			nSerial = _tstoi(sSerial);
+
+			if (LoadPCRDnFromMk(nSerial) == 1)
+			{
+				MakeItsFile(nSerial, nLayer);
+				//if(nLayer == RMAP_UP || nLayer == RMAP_INNER_UP)
+				//	LoadPCRUpFromMk(nSerial);
+				//else
+				//	LoadPCRDnFromMk(nSerial);
+				//MakeItsFile(nSerial, nLayer);
+
+				nTot++;
+			}
 		}
 	}
 }
@@ -2985,17 +3093,12 @@ void CDlgMenu05::MakeItsFile(int nSerial, int nLayer)
 
 CString CDlgMenu05::GetItsFileData(int nSerial, int nLayer) // RMAP_UP, RMAP_DN, RMAP_INNER_UP, RMAP_INNER_DN
 {
-	//CString sItsCode = pDoc->m_sItsCode;
-	//CString sPath = pDoc->GetItsPath(nSerial, nLayer);
-
 	CString str = _T(""), sSide = _T(""), sTemp = _T(""), sItsData = _T("");
-	//CString sItsCode = pDoc->WorkingInfo.LastJob.sEngItsCode;
 	CString sItsCode = pDoc->m_sItsCode;
-	//CString sItsCode = m_sLot;
 
 	int nNodeX = pDoc->m_Master[0].m_pPcsRgn->nCol;
 	int nNodeY = pDoc->m_Master[0].m_pPcsRgn->nRow;
-	int nStripY = pDoc->m_Master[0].m_pPcsRgn->nRow / 4; // Strip(1~4);
+	int nStripY = pDoc->m_Master[0].m_pPcsRgn->nRow / MAX_STRIP; // Strip(1~4);
 	int nIdx = pDoc->GetPcrIdx0(nSerial);
 
 	int nTotDefPcs = 0;
@@ -3023,11 +3126,6 @@ CString CDlgMenu05::GetItsFileData(int nSerial, int nLayer) // RMAP_UP, RMAP_DN,
 	case RMAP_INNER_UP:
 		nLayer = RMAP_UP;
 		sSide = _T("T");
-		//if (pDoc->m_pPcrInner[0])
-		//{
-		//	if (pDoc->m_pPcrInner[0][nIdx])
-		//		nTotDefPcs = pDoc->m_pPcrInner[0][nIdx]->m_nTotDef;
-		//}
 		if (pDoc->m_pPcr[nLayer])
 		{
 			if (pDoc->m_pPcr[nLayer][nIdx])
@@ -3037,11 +3135,6 @@ CString CDlgMenu05::GetItsFileData(int nSerial, int nLayer) // RMAP_UP, RMAP_DN,
 	case RMAP_INNER_DN:
 		nLayer = RMAP_DN;
 		sSide = _T("B");
-		//if (pDoc->m_pPcrInner[1])
-		//{
-		//	if (pDoc->m_pPcrInner[1][nIdx])
-		//		nTotDefPcs = pDoc->m_pPcrInner[1][nIdx]->m_nTotDef;
-		//}
 		if (pDoc->m_pPcr[nLayer])
 		{
 			if (pDoc->m_pPcr[nLayer][nIdx])
@@ -3069,13 +3162,14 @@ CString CDlgMenu05::GetItsFileData(int nSerial, int nLayer) // RMAP_UP, RMAP_DN,
 		nR = nRow;
 		for (nCol = 0; nCol < nNodeX; nCol++)
 		{
-			//pDoc->m_Master[0].m_pPcsRgn->GetMkPnt(nCol, nRow, nPcsId, ptPnt);
-			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			//nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNumForIts[nR][nCol];
 			if (nPcrLineNum > -1)
 			{
 				if (pDoc->m_pPcr[nLayer][nIdx]->m_pMk[nPcrLineNum] != -2) // -2 (NoMarking)
 				{
-					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					//nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefTypeForIts[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
 					if (nDefCode > 0)
 					{
 						nTotStrip[0]++;
@@ -3097,12 +3191,14 @@ CString CDlgMenu05::GetItsFileData(int nSerial, int nLayer) // RMAP_UP, RMAP_DN,
 		nR = nRow + nStripY;
 		for (nCol = 0; nCol < nNodeX; nCol++)
 		{
-			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			//nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNumForIts[nR][nCol];
 			if (nPcrLineNum > -1)
 			{
 				if (pDoc->m_pPcr[nLayer][nIdx]->m_pMk[nPcrLineNum] != -2) // -2 (NoMarking)
 				{
-					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					//nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefTypeForIts[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
 					if (nDefCode > 0)
 					{
 						nTotStrip[1]++;
@@ -3124,12 +3220,14 @@ CString CDlgMenu05::GetItsFileData(int nSerial, int nLayer) // RMAP_UP, RMAP_DN,
 		nR = nRow + nStripY * 2;
 		for (nCol = 0; nCol < nNodeX; nCol++)
 		{
-			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			//nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNumForIts[nR][nCol];
 			if (nPcrLineNum > -1)
 			{
 				if (pDoc->m_pPcr[nLayer][nIdx]->m_pMk[nPcrLineNum] != -2) // -2 (NoMarking)
 				{
-					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					//nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefTypeForIts[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
 					if (nDefCode > 0)
 					{
 						nTotStrip[2]++;
@@ -3151,12 +3249,14 @@ CString CDlgMenu05::GetItsFileData(int nSerial, int nLayer) // RMAP_UP, RMAP_DN,
 		nR = nRow + nStripY * 3;
 		for (nCol = 0; nCol < nNodeX; nCol++)
 		{
-			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			//nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNum[nR][nCol];
+			nPcrLineNum = pDoc->m_pPcr[nLayer][nIdx]->m_arPcrLineNumForIts[nR][nCol];
 			if (nPcrLineNum > -1)
 			{
 				if (pDoc->m_pPcr[nLayer][nIdx]->m_pMk[nPcrLineNum] != -2) // -2 (NoMarking)
 				{
-					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					//nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefType[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
+					nDefCode = pDoc->m_pPcr[nLayer][nIdx]->m_arDefTypeForIts[nR][nCol]; //m_pPnlBuf[nSerial - 1][nR][nCol]; // DefCode 3D Array : [nSerial][nRow][nCol] - 릴맵파일 정보용.
 					if (nDefCode > 0)
 					{
 						nTotStrip[3]++;
@@ -4355,12 +4455,12 @@ int CDlgMenu05::LoadPCRUpFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 	CFileFind findfile;
 
 	sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
-		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer, nSerial);
+		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerUp, nSerial);
 
 	if (!findfile.FindFile(sPath))
 	{
 		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
-			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer, nSerial);
+			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerUp, nSerial);
 		if (!findfile.FindFile(sPath))
 		{
 			return(2);
@@ -4544,9 +4644,11 @@ int CDlgMenu05::LoadPCRUpFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 			nFileSize = nFileSize - nTemp - 1;
 			pDoc->m_pPcr[0][nIdx]->m_pDefType[i] = _tstoi(strBadName);
 
-			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_pPcr[0][nIdx]->m_pDefPcs[i], nC, nR);
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, pDoc->m_pPcr[0][nIdx]->m_pDefPcs[i], nC, nR);
 			pDoc->m_pPcr[0][nIdx]->m_arDefType[nR][nC] = pDoc->m_pPcr[0][nIdx]->m_pDefType[i];
 			pDoc->m_pPcr[0][nIdx]->m_arPcrLineNum[nR][nC] = i;
+			pDoc->m_pPcr[0][nIdx]->m_arDefTypeForIts[nR][nC] = pDoc->m_pPcr[0][nIdx]->m_pDefType[i];
+			pDoc->m_pPcr[0][nIdx]->m_arPcrLineNumForIts[nR][nC] = i;
 
 			// CellNum
 			nTemp = strFileData.Find(',', 0);
@@ -4622,12 +4724,12 @@ int CDlgMenu05::LoadPCRDnFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 	CFileFind findfile;
 
 	sPath.Format(_T("%s%s\\%s\\%s\\OFFLINE\\%04d.pcr"),
-		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer, nSerial);
+		pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerDn, nSerial);
 
 	if (!findfile.FindFile(sPath))
 	{
 		sPath.Format(_T("%s%s\\%s\\%s\\%04d.pcr"),
-			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayer, nSerial);
+			pDoc->WorkingInfo.System.sPathOldFile, m_sModel, m_sLot, m_sLayerDn, nSerial);
 		if (!findfile.FindFile(sPath))
 		{
 			return(2);
@@ -4771,22 +4873,6 @@ int CDlgMenu05::LoadPCRDnFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 			if (pDoc->WorkingInfo.System.bStripPcsRgnBin)	// DTS용
 			{
 				pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i] = _tstoi(strPieceID);
-
-				//switch (pDoc->m_Master[1].MasterInfo.nActionCode)	// 0 : Rotation / Mirror 적용 없음(CAM Data 원본), 1 : 좌우 미러, 2 : 상하 미러, 3 : 180 회전, 4 : 270 회전(CCW), 5 : 90 회전(CW)
-				//{
-				//case 0:
-				//	pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i] = _tstoi(strPieceID);
-				//	break;
-				//case 1:
-				//	pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i] = pDoc->MirrorLR(_tstoi(strPieceID));
-				//	break;
-				//case 3:
-				//	pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i] = pDoc->Rotate180(_tstoi(strPieceID));
-				//	break;
-				//default:
-				//	pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i] = _tstoi(strPieceID);
-				//	break;
-				//}
 			}
 			else
 				pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i] = pDoc->MirrorLR(_tstoi(strPieceID));	// 초기 양면검사기용
@@ -4815,10 +4901,11 @@ int CDlgMenu05::LoadPCRDnFromMk(int nSerial)	// return : 2(Failed), 1(정상), -1(
 			pDoc->m_pPcr[1][nIdx]->m_pDefType[i] = _tstoi(strBadName);
 
 			// Temp for ITS - m_pPcr[0][nIdx]->m_pDefPcs[i] = Rotate180(_tstoi(strPieceID));
-			//pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->Rotate180(pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i]), nC, nR);
-			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i], nC, nR);
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, pDoc->m_pPcr[1][nIdx]->m_pDefPcs[i], nC, nR);
 			pDoc->m_pPcr[1][nIdx]->m_arDefType[nR][nC] = pDoc->m_pPcr[1][nIdx]->m_pDefType[i];
 			pDoc->m_pPcr[1][nIdx]->m_arPcrLineNum[nR][nC] = i;
+			pDoc->m_pPcr[1][nIdx]->m_arDefTypeForIts[nR][nC] = pDoc->m_pPcr[1][nIdx]->m_pDefType[i];
+			pDoc->m_pPcr[1][nIdx]->m_arPcrLineNumForIts[nR][nC] = i;
 
 			// CellNum
 			nTemp = strFileData.Find(',', 0);
@@ -4948,4 +5035,62 @@ CString CDlgMenu05::GetItsCode()
 		str = _T("");
 
 	return str;
+}
+
+
+int CDlgMenu05::GetLayer(CString strLayer) // RMAP_NONE = -1, RMAP_UP = 0, RMAP_DN = 1
+{
+	CString sRes, sLayer, sRemain;
+	int nPos;
+
+	if (strLayer.Find(_T("TOP")) >= 0)
+	{
+		sRemain = strLayer;
+		nPos = sRemain.ReverseFind(_T('-'));
+		if (nPos >= 0)
+		{
+			sRes = sRemain.Right(sRemain.GetLength() - nPos - 1);
+			sRemain.Delete(nPos, sRemain.GetLength() - nPos);
+
+			nPos = sRemain.ReverseFind(_T('-'));
+			if (nPos >= 0)
+			{
+				sLayer = sRemain.Right(sRemain.GetLength() - nPos - 1);
+				sRemain.Delete(nPos, sRemain.GetLength() - nPos);
+			}
+
+			if (sLayer == _T("1"))
+				return RMAP_INNER_UP;
+			else if (sLayer == _T("3"))
+				return RMAP_UP;
+			else
+				return RMAP_UP;
+		}
+	}
+	else if (strLayer.Find(_T("BOTTOM")) >= 0)
+	{
+		sRemain = strLayer;
+		nPos = sRemain.ReverseFind(_T('-'));
+		if (nPos >= 0)
+		{
+			sRes = sRemain.Right(sRemain.GetLength() - nPos - 1);
+			sRemain.Delete(nPos, sRemain.GetLength() - nPos);
+
+			nPos = sRemain.ReverseFind(_T('-'));
+			if (nPos >= 0)
+			{
+				sLayer = sRemain.Right(sRemain.GetLength() - nPos - 1);
+				sRemain.Delete(nPos, sRemain.GetLength() - nPos);
+			}
+
+			if (sLayer == _T("2"))
+				return RMAP_INNER_DN;
+			else if (sLayer == _T("4"))
+				return RMAP_DN;
+			else
+				return RMAP_DN;
+		}
+	}
+
+	return RMAP_NONE;
 }

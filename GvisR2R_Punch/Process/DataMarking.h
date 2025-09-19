@@ -33,8 +33,9 @@ public:
 	int *m_pImgSz;
 	int *m_pImg;
 	int *m_pMk;
-	int m_arDefType[100][100];
+	int m_arDefType[100][100], m_arDefTypeForIts[100][100];
 	int m_arPcrLineNum[100][100];
+	int m_arPcrLineNumForIts[100][100];
 	CPoint *m_pDefPos;
 	int m_nCol, m_nRow;
 	CPoint m_MkOffset; // From PCS Center.

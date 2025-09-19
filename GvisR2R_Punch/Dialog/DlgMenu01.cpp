@@ -1708,7 +1708,7 @@ void CDlgMenu01::ShowDefInfoUp(int nIdx) // nIdx : 0 ~ 11 (12ea)
 	nDefCode = pDoc->m_pPcr[0][nPcrIdx]->m_pDefType[m_nIdxDef[0]];
 	rgbDef = pDoc->m_pReelMap->m_rgbDef[nDefCode];
 	if(pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 	str.Format(_T("%s\r\n%c - %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+'A', nCol+1, nRow+1);
 // 	str.Format(_T("%s\r\n%d열 %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+1, nCol+1, nRow+1);
 // 	str.Format(_T("%s"), pDoc->m_pReelMap->pMkInfo[nPcsIdx]);
@@ -1725,7 +1725,7 @@ void CDlgMenu01::ShowDefInfoUp(int nIdx) // nIdx : 0 ~ 11 (12ea)
  	rgbDef = pDoc->m_pReelMap->m_rgbDef[nDefCode];	
 // 	str.Format(_T("%s"), pDoc->m_pReelMap->pMkInfo[nPcsIdx]);
 	if(pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);	
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 	str.Format(_T("%s\r\n%c - %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+'A', nCol+1, nRow+1);
 // 	str.Format(_T("%s\r\n%d열 %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+1, nCol+1, nRow+1);
 #endif
@@ -1761,7 +1761,7 @@ void CDlgMenu01::ShowDefInfoDn(int nIdx) // nIdx : 0 ~ 11 (12ea)
 // 	nDefCode = pDoc->m_pReelMap->pPcsDef[2][28];
 	rgbDef = pDoc->m_pReelMap->m_rgbDef[nDefCode];
 	if(pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);	
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 	str.Format(_T("%s\r\n%c - %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+'A', nCol+1, nRow+1);
 // 	str.Format(_T("%s\r\n%d열 %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+1, nCol+1, nRow+1);
 // 	str.Format(_T("%s"), pDoc->m_pReelMap->pMkInfo[nPcsIdx]);
@@ -1776,7 +1776,7 @@ void CDlgMenu01::ShowDefInfoDn(int nIdx) // nIdx : 0 ~ 11 (12ea)
 // 	nDefCode = pDoc->m_pReelMap->pPcsDef[nSelMkPnl][nPcsIdx];
 	rgbDef = pDoc->m_pReelMap->m_rgbDef[nDefCode];	
 	if(pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);	
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 	str.Format(_T("%s\r\n%c - %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+'A', nCol+1, nRow+1);
 // 	str.Format(_T("%s\r\n%d열 %d, %d"), pDoc->m_pReelMap->m_sKorDef[nDefCode], nStrip+1, nCol+1, nRow+1);
 // 	str.Format(_T("%s"), pDoc->m_pReelMap->pMkInfo[nPcsIdx]);
@@ -1824,7 +1824,7 @@ BOOL CDlgMenu01::SaveDefImgPosUp(int nSerial, int nIdxMkInfo, int nIdxImg) // (n
 	int nPcsIdx = pDoc->m_pPcr[0][nPcrIdx]->m_pDefPcs[m_nIdxDef[0]];
 	int nDefCode = pDoc->m_pPcr[0][nPcrIdx]->m_pDefType[m_nIdxDef[0]];
 	if (pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 
 	CString strDefImgPathS, strDefImgPathD, strTemp;
 
@@ -1868,7 +1868,7 @@ BOOL CDlgMenu01::SaveDefImgPosDn(int nSerial, int nIdxMkInfo, int nIdxImg) // (n
 	int nPcsIdx = pDoc->m_pPcr[1][nPcrIdx]->m_pDefPcs[m_nIdxDef[1]];
 	int nDefCode = pDoc->m_pPcr[1][nPcrIdx]->m_pDefType[m_nIdxDef[1]];
 	if (pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 
 	CString strDefImgPathS, strDefImgPathD, strTemp;
 

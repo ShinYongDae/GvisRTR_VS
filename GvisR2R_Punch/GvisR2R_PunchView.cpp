@@ -12538,7 +12538,7 @@ CString CGvisR2R_PunchView::GetMkInfo0(int nSerial, int nMkPcs) // return Cam0 :
 	}
 
 	if (pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 
 	sInfo.Format(_T("%04d_%c_%d_%d"), nSerial, nStrip + 'A', nCol + 1, nRow + 1);
 
@@ -12570,7 +12570,7 @@ CString CGvisR2R_PunchView::GetMkInfo1(int nSerial, int nMkPcs) // return Cam1 :
 		nDefCode = pDoc->m_pPcr[0][nPcrIdx]->m_pDefType[nMkPcs];
 	}
 	if (pDoc->m_Master[0].m_pPcsRgn)
-		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);
+		pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 
 	sInfo.Format(_T("%04d_%c_%d_%d"), nSerial, nStrip + 'A', nCol + 1, nRow + 1);
 
@@ -33123,7 +33123,7 @@ int CGvisR2R_PunchView::IsOfflineFolder() // 0 : Not exist, 1 : Exist only Up, 2
 	CFileFind finder;
 
 	str = _T("OFFLINE");
-	sPath.Format(_T("%s%s\\%s\\%s\\%s"), pDoc->WorkingInfo.System.sPathOldFile,
+	sPath.Format(_T("%s%s\\%s\\%s\\%s\\*.pcr"), pDoc->WorkingInfo.System.sPathOldFile,
 		pDoc->WorkingInfo.LastJob.sModelUp,
 		pDoc->WorkingInfo.LastJob.sLotUp,
 		pDoc->WorkingInfo.LastJob.sLayerUp,
@@ -33136,7 +33136,7 @@ int CGvisR2R_PunchView::IsOfflineFolder() // 0 : Not exist, 1 : Exist only Up, 2
 		nRtn |= 0x01;
 
 	str = _T("OFFLINE");
-	sPath.Format(_T("%s%s\\%s\\%s\\%s"), pDoc->WorkingInfo.System.sPathOldFile,
+	sPath.Format(_T("%s%s\\%s\\%s\\%s\\*.pcr"), pDoc->WorkingInfo.System.sPathOldFile,
 		pDoc->WorkingInfo.LastJob.sModelUp,
 		pDoc->WorkingInfo.LastJob.sLotUp,
 		pDoc->WorkingInfo.LastJob.sLayerDn,

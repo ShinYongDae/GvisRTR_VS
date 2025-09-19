@@ -1394,12 +1394,28 @@ BOOL CGvisR2R_PunchDoc::LoadWorkingInfo()
 		WorkingInfo.System.sPathItsFile = CString(_T(""));
 	}
 
-	if (0 < ::GetPrivateProfileString(_T("System"), _T("ItsFileDirPath"), NULL, szData, sizeof(szData), sPath))
-		WorkingInfo.System.sPathIts = CString(szData);
+	//if (0 < ::GetPrivateProfileString(_T("System"), _T("ItsFileDirPath"), NULL, szData, sizeof(szData), sPath))
+	//	WorkingInfo.System.sPathIts = CString(szData);
+	//else
+	//{
+	//	AfxMessageBox(_T("ItsFileDirPath가 설정되어 있지 않습니다."), MB_ICONWARNING | MB_OK);
+	//	WorkingInfo.System.sPathIts = CString(_T(""));
+	//}
+
+	if (0 < ::GetPrivateProfileString(_T("System"), _T("ItsFileInnerDirPath"), NULL, szData, sizeof(szData), sPath))
+		WorkingInfo.System.sPathItsInner = CString(szData);
 	else
 	{
-		AfxMessageBox(_T("ItsFileDirPath가 설정되어 있지 않습니다."), MB_ICONWARNING | MB_OK);
-		WorkingInfo.System.sPathIts = CString(_T(""));
+		//AfxMessageBox(_T("ItsFileInnerDirPath가 설정되어 있지 않습니다."), MB_ICONWARNING | MB_OK);
+		WorkingInfo.System.sPathItsInner = CString(_T("D:\\Its1\\"));
+	}
+
+	if (0 < ::GetPrivateProfileString(_T("System"), _T("ItsFileOuterDirPath"), NULL, szData, sizeof(szData), sPath))
+		WorkingInfo.System.sPathItsOuter = CString(szData);
+	else
+	{
+		//AfxMessageBox(_T("ItsFileOuterDirPath가 설정되어 있지 않습니다."), MB_ICONWARNING | MB_OK);
+		WorkingInfo.System.sPathItsOuter = CString(_T("D:\\Its\\"));
 	}
 
 	if (0 < ::GetPrivateProfileString(_T("System"), _T("VrsOldFileDirIpPath"), NULL, szData, sizeof(szData), sPath))
@@ -5966,9 +5982,11 @@ int CGvisR2R_PunchDoc::LoadPCRUp(int nSerial, BOOL bFromShare)	// return : 2(Fai
 			nFileSize = nFileSize - nTemp - 1;
 			m_pPcr[0][nIdx]->m_pDefType[i] = _tstoi(strBadName);
 
-			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(m_pPcr[0][nIdx]->m_pDefPcs[i], nC, nR);
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, m_pPcr[0][nIdx]->m_pDefPcs[i], nC, nR);
 			m_pPcr[0][nIdx]->m_arDefType[nR][nC] = m_pPcr[0][nIdx]->m_pDefType[i];
 			m_pPcr[0][nIdx]->m_arPcrLineNum[nR][nC] = i;
+			m_pPcr[0][nIdx]->m_arDefTypeForIts[nR][nC] = m_pPcr[0][nIdx]->m_pDefType[i];
+			m_pPcr[0][nIdx]->m_arPcrLineNumForIts[nR][nC] = i;
 
 			// CellNum
 			nTemp = strFileData.Find(',', 0);
@@ -6301,9 +6319,12 @@ int CGvisR2R_PunchDoc::LoadPCRDn(int nSerial, BOOL bFromShare)	// return : 2(Fai
 			m_pPcr[1][nIdx]->m_pDefType[i] = _tstoi(strBadName);
 
 			// Temp for ITS - m_pPcr[0][nIdx]->m_pDefPcs[i] = Rotate180(_tstoi(strPieceID));
-			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(Rotate180(m_pPcr[1][nIdx]->m_pDefPcs[i]), nC, nR);
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, Rotate180(m_pPcr[1][nIdx]->m_pDefPcs[i]), nC, nR);
 			m_pPcr[1][nIdx]->m_arDefType[nR][nC] = m_pPcr[1][nIdx]->m_pDefType[i];
 			m_pPcr[1][nIdx]->m_arPcrLineNum[nR][nC] = i;
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, m_pPcr[1][nIdx]->m_pDefPcs[i], nC, nR);
+			m_pPcr[1][nIdx]->m_arDefTypeForIts[nR][nC] = m_pPcr[1][nIdx]->m_pDefType[i];
+			m_pPcr[1][nIdx]->m_arPcrLineNumForIts[nR][nC] = i;
 
 			// CellNum
 			nTemp = strFileData.Find(',', 0);
@@ -6635,7 +6656,7 @@ BOOL CGvisR2R_PunchDoc::CopyDefImgUp(int nSerial, CString sNewLot)
 			int nPcsIdx = pDoc->m_pPcr[0][nPcrIdx]->m_pDefPcs[i];
 			int nDefCode = pDoc->m_pPcr[0][nPcrIdx]->m_pDefType[i];
 			if (pDoc->m_Master[0].m_pPcsRgn)
-				pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);
+				pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 
 			if (WorkingInfo.System.sPathOldFile.Right(1) != "\\")
 			{
@@ -6960,7 +6981,7 @@ BOOL CGvisR2R_PunchDoc::CopyDefImgDn(int nSerial, CString sNewLot)
 			int nPcsIdx = pDoc->m_pPcr[1][nPcrIdx]->m_pDefPcs[i];
 			int nDefCode = pDoc->m_pPcr[1][nPcrIdx]->m_pDefType[i];
 			if (pDoc->m_Master[0].m_pPcsRgn)
-				pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(nPcsIdx, nStrip, nCol, nRow);
+				pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, nPcsIdx, nStrip, nCol, nRow);
 
 			if (WorkingInfo.System.sPathOldFile.Right(1) != "\\")
 			{
@@ -11324,10 +11345,17 @@ CString CGvisR2R_PunchDoc::GetItsFolderPath()
 
 CString CGvisR2R_PunchDoc::GetItsTargetFolderPath()
 {
-	CString sItsPath = pDoc->WorkingInfo.System.sPathIts;
+	CString sItsPath = _T("");// = WorkingInfo.System.sPathIts;
+	if (GetTestMode() == MODE_INNER)
+		sItsPath = pDoc->WorkingInfo.System.sPathItsInner;
+	else if (GetTestMode() == MODE_OUTER)// || pDoc->WorkingInfo.System.bUseDualIts || pDoc->WorkingInfo.System.bUseDual2dIts)
+		sItsPath = pDoc->WorkingInfo.System.sPathItsOuter;
 
 	if (sItsPath.IsEmpty())
+	{
+		pView->MsgBox(_T("내/외층 설정이 않되어서 ITS 폴더를 설정할 수 없습니다."));
 		return _T("");
+	}
 
 	int pos = sItsPath.ReverseFind('\\');
 	if (pos != -1)
@@ -11335,6 +11363,20 @@ CString CGvisR2R_PunchDoc::GetItsTargetFolderPath()
 
 	return sItsPath;
 }
+
+//CString CGvisR2R_PunchDoc::GetItsTargetFolderPath()
+//{
+//	CString sItsPath = pDoc->WorkingInfo.System.sPathIts;
+//
+//	if (sItsPath.IsEmpty())
+//		return _T("");
+//
+//	int pos = sItsPath.ReverseFind('\\');
+//	if (pos != -1)
+//		sItsPath.Delete(pos, sItsPath.GetLength() - pos);
+//
+//	return sItsPath;
+//}
 
 CString CGvisR2R_PunchDoc::GetItsReelmapPath()
 {
@@ -13643,22 +13685,6 @@ int CGvisR2R_PunchDoc::LoadPcrUp(CString sPath)	// return : 2(Failed), 1(정상), 
 			if (pDoc->WorkingInfo.System.bStripPcsRgnBin)	// DTS용
 			{
 				m_pPcr[0][nIdx]->m_pDefPcs[i] = _tstoi(strPieceID);
-
-				//switch (m_Master[0].MasterInfo.nActionCode)	// 0 : Rotation / Mirror 적용 없음(CAM Data 원본), 1 : 좌우 미러, 2 : 상하 미러, 3 : 180 회전, 4 : 270 회전(CCW), 5 : 90 회전(CW)
-				//{
-				//case 0:
-				//	m_pPcr[0][nIdx]->m_pDefPcs[i] = _tstoi(strPieceID);
-				//	break;
-				//case 1:
-				//	m_pPcr[0][nIdx]->m_pDefPcs[i] = MirrorLR(_tstoi(strPieceID));
-				//	break;
-				//case 3:
-				//	m_pPcr[0][nIdx]->m_pDefPcs[i] = Rotate180(_tstoi(strPieceID));
-				//	break;
-				//default:
-				//	m_pPcr[0][nIdx]->m_pDefPcs[i] = _tstoi(strPieceID);
-				//	break;
-				//}
 			}
 			else
 				m_pPcr[0][nIdx]->m_pDefPcs[i] = _tstoi(strPieceID);
@@ -13686,9 +13712,11 @@ int CGvisR2R_PunchDoc::LoadPcrUp(CString sPath)	// return : 2(Failed), 1(정상), 
 			nFileSize = nFileSize - nTemp - 1;
 			m_pPcr[0][nIdx]->m_pDefType[i] = _tstoi(strBadName);
 
-			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(m_pPcr[0][nIdx]->m_pDefPcs[i], nC, nR);
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[0].MasterInfo.nActionCode, m_pPcr[0][nIdx]->m_pDefPcs[i], nC, nR);
 			m_pPcr[0][nIdx]->m_arDefType[nR][nC] = m_pPcr[0][nIdx]->m_pDefType[i];
 			m_pPcr[0][nIdx]->m_arPcrLineNum[nR][nC] = i;
+			m_pPcr[0][nIdx]->m_arDefTypeForIts[nR][nC] = m_pPcr[0][nIdx]->m_pDefType[i];
+			m_pPcr[0][nIdx]->m_arPcrLineNumForIts[nR][nC] = i;
 
 			// CellNum
 			nTemp = strFileData.Find(',', 0);
@@ -14021,9 +14049,12 @@ int CGvisR2R_PunchDoc::LoadPcrDn(CString sPath)	// return : 2(Failed), 1(정상), 
 			m_pPcr[1][nIdx]->m_pDefType[i] = _tstoi(strBadName);
 
 			// Temp for ITS - m_pPcr[0][nIdx]->m_pDefPcs[i] = Rotate180(_tstoi(strPieceID));
-			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(Rotate180(m_pPcr[1][nIdx]->m_pDefPcs[i]), nC, nR);
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, Rotate180(m_pPcr[1][nIdx]->m_pDefPcs[i]), nC, nR);
 			m_pPcr[1][nIdx]->m_arDefType[nR][nC] = m_pPcr[1][nIdx]->m_pDefType[i];
 			m_pPcr[1][nIdx]->m_arPcrLineNum[nR][nC] = i;
+			pDoc->m_Master[0].m_pPcsRgn->GetMkMatrix(pDoc->m_Master[1].MasterInfo.nActionCode, m_pPcr[1][nIdx]->m_pDefPcs[i], nC, nR);
+			m_pPcr[1][nIdx]->m_arDefTypeForIts[nR][nC] = m_pPcr[1][nIdx]->m_pDefType[i];
+			m_pPcr[1][nIdx]->m_arPcrLineNumForIts[nR][nC] = i;
 
 			// CellNum
 			nTemp = strFileData.Find(',', 0);

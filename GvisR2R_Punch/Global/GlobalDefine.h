@@ -658,7 +658,7 @@ struct stSystem
 	CString sPathMkMenu01, sPathMkMenu03, sPathMkInfo, sPathMonDispMain;
 	CString sPathMkWork;
 
-	CString sPathOldFile, sPathItsFile, sPathIts;
+	CString sPathOldFile, sPathItsFile, sPathItsInner, sPathItsOuter; //sPathIts, 
 	CString sIpPathOldFile, sIpPathItsFile, sIpPathIts;
 	CString sPathSapp3;
 	BOOL bSaveLog;
@@ -700,7 +700,9 @@ struct stSystem
 
 		sPathOldFile = _T("");
 		sPathItsFile = _T("");
-		sPathIts = _T("");
+		//sPathIts = _T("");
+		sPathItsInner = _T("");
+		sPathItsOuter = _T("");
 		sIpPathOldFile = _T("");
 		sIpPathItsFile = _T("");
 		sIpPathIts = _T("");
