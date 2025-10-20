@@ -11350,6 +11350,8 @@ CString CGvisR2R_PunchDoc::GetItsTargetFolderPath()
 		sItsPath = pDoc->WorkingInfo.System.sPathItsInner;
 	else if (GetTestMode() == MODE_OUTER)// || pDoc->WorkingInfo.System.bUseDualIts || pDoc->WorkingInfo.System.bUseDual2dIts)
 		sItsPath = pDoc->WorkingInfo.System.sPathItsOuter;
+	else
+		sItsPath = pDoc->WorkingInfo.System.sPathItsOuter;
 
 	if (sItsPath.IsEmpty())
 	{
@@ -13068,12 +13070,28 @@ CString CGvisR2R_PunchDoc::GetItsTargetPath(int nSerial, int nLayer)	// RMAP_UP,
 	switch (nLayer)
 	{
 	case RMAP_UP: // ¿ÜÃþ Top
-		str.Format(_T("%s_L2_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
-		sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
+		if (pDoc->GetTestMode() == MODE_OUTER)
+		{
+			str.Format(_T("%s_L2_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+			sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
+		}
+		else
+		{
+			str.Format(_T("%s_L0_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+			sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
+		}
 		break;
 	case RMAP_DN: // ¿ÜÃþ Bottom
-		str.Format(_T("%s_L2_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
-		sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
+		if (pDoc->GetTestMode() == MODE_OUTER)
+		{
+			str.Format(_T("%s_L2_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+			sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
+		}
+		else
+		{
+			str.Format(_T("%s_L0_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+			sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
+		}
 		break;
 	case RMAP_INNER_UP: // ³»Ãþ Top
 		str.Format(_T("%s_L1_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
