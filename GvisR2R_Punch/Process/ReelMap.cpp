@@ -34,6 +34,7 @@ CReelMap::CReelMap(int nLayer, int nPnl, int nPcs, int nDir)
 	nTotPcs = nPcs;
 	nDir = ROT_NONE;
 	m_nBeforeSerial = 0;
+	//m_nBeforeSerialOffline = 0;
 
 	m_dTotLen = 0.0;
 	m_bUseLotSep = FALSE;
@@ -52,78 +53,111 @@ CReelMap::CReelMap(int nLayer, int nPnl, int nPcs, int nDir)
 	m_nPrevSerial[0] = 0;	// --
 	m_nPrevSerial[1] = 0;	// ++
 
-	m_rgbDef[DEF_NONE]=(RGB_WHITE); // (RGB_GREEN)
-	m_rgbDef[DEF_NICK]=(RGB_MAGENTA);
-	m_rgbDef[DEF_PROTRUSION]=(RGB_SKYBLUE);
-	m_rgbDef[DEF_SPACE]=(RGB_LTGREEN);
-	m_rgbDef[DEF_OPEN]=(RGB_LTRED);
-	m_rgbDef[DEF_SHORT]=(RGB_RED);
-	m_rgbDef[DEF_USHORT]=(RGB_LTCYAN);
-	m_rgbDef[DEF_PINHOLE]=(RGB_LLTGREEN);
-	m_rgbDef[DEF_HOLE_MISS]=(RGB_LTBLUE);
-	m_rgbDef[DEF_EXTRA]=(RGB_CLOUDBLUE);
-	m_rgbDef[DEF_PAD]=(RGB_LTPURPLE);
-	m_rgbDef[DEF_HOLE_POSITION]=(RGB_PINK);
-	m_rgbDef[DEF_POI]=(RGB_LTMAGENTA);
-	m_rgbDef[DEF_VH_POSITION]=(RGB_LTYELLOW);
-	m_rgbDef[DEF_VH_MISS]=(RGB_BOON);
-	m_rgbDef[DEF_HOLE_DEFECT]=(RGB_LTPINK);
-	m_rgbDef[DEF_HOLE_OPEN]=(RGB_YELLOWGREEN);
-	m_rgbDef[DEF_VH_OPEN]=(RGB_RED);
-	m_rgbDef[DEF_VH_DEF]=(RGB_BROWN);
-	m_rgbDef[DEF_LIGHT]=(RGB_YELLOW);
+	m_rgbDef[DEF_NONE] = (RGB_WHITE);						// 0=ºÒ·®¾øÀ½
+	m_rgbDef[DEF_NICK] = (RGB_MAGENTA);					// 1=°á¼Õ
+	m_rgbDef[DEF_PROTRUSION] = (RGB_SKYBLUE);				// 2=µ¹±â
+	m_rgbDef[DEF_SPACE] = (RGB_LTGREEN);					// 3=¼±°£Æø
+	m_rgbDef[DEF_OPEN] = (RGB_LTRED);						// 4=¿ÀÇÂ
+	m_rgbDef[DEF_SHORT] = (RGB_RED);						// 5=¼îÆ®
+	m_rgbDef[DEF_USHORT] = (RGB_LTCYAN);					// 6=u¼îÆ®
+	m_rgbDef[DEF_PINHOLE] = (RGB_LLTGREEN);				// 7=ÇÉÈ¦
+	m_rgbDef[DEF_HOLE_MISS] = (RGB_LTBLUE);				// 8=È¦¾øÀ½
+	m_rgbDef[DEF_EXTRA] = (RGB_CLOUDBLUE);				// 9=ÀÜµ¿
+	m_rgbDef[DEF_PAD] = (RGB_LTPURPLE);					// 10=ÆÐµå
+	m_rgbDef[DEF_HOLE_POSITION] = (RGB_PINK);			// 11=È¦Æí½É
+	m_rgbDef[DEF_POI] = (RGB_LTMAGENTA);					// 12=POI
+	m_rgbDef[DEF_VH_POSITION] = (RGB_LTYELLOW);			// 13=VHÆí½É
+	m_rgbDef[DEF_VH_MISS] = (RGB_BOON);					// 14=VH¾øÀ½
+	m_rgbDef[DEF_HOLE_DEFECT] = (RGB_LTPINK);				// 15=È¦ºÒ·®
+	m_rgbDef[DEF_HOLE_OPEN] = (RGB_LTGREEN);				// 16=È¦¿ÀÇÂ
+	m_rgbDef[DEF_VH_OPEN] = (RGB_LT_DARKMAGENTA);			// 17=VH¿ÀÇÂ
+	m_rgbDef[DEF_VH_DEF] = (RGB_ORANGE);					// 18=VH°áÇÔ
+	m_rgbDef[DEF_EDGE_NICK] = (RGB_MUSTARD);			// 19 = E.°á¼Õ
+	m_rgbDef[DEF_EDGE_PROT] = (RGB_SKY);				// 20 = E.µ¹±â
+	m_rgbDef[DEF_EDGE_SPACE] = (RGB_LT_BROWN);			// 21 = E.¼±°£Æø
+	m_rgbDef[DEF_USER_DEFINE_1] = (RGB_PEACOCK_GREEN);	// 22 = UDD1
+	m_rgbDef[DEF_NARROW] = (RGB_PURPLE);				// 23 = Narrow
+	m_rgbDef[DEF_WIDE] = (RGB_FOREST_GREEN);			// 24 = Wide
+	m_rgbDef[DEF_FIXED_DEF] = (RGB_RED);				// 25 = °íÁ¤ºÒ·®
+	m_rgbDef[DEF_VH_SIZE] = (RGB_PURPLE);				// 26 = VHÅ©±â
+	m_rgbDef[DEF_VH_EDGE] = (RGB_EVER_GREEN);			// 27 = VH¿¡Áö°áÇÔ
+	m_rgbDef[DEF_LIGHT] = (RGB_YELLOW);					// 28 = ³ë±¤ºÒ·®
+	m_rgbDef[DEF_INNER] = (RGB_PCS_OUT);				// 29 = ³»ÃþºÒ·®
 
 	m_cBigDef[0] = '*';		//	NONE
-	m_cBigDef[1] = 'N';		//	NICK
-	m_cBigDef[2] = 'D';		//	PROTRUSION
-	m_cBigDef[3] = 'A';		//	SPACE
-	m_cBigDef[4] = 'O';		//	OPEN
-	m_cBigDef[5] = 'S';		//	SHORT
-	m_cBigDef[6] = 'U';		//	USHORT
-	m_cBigDef[7] = 'I';		//	PINHOLE
-	m_cBigDef[8] = 'H';		//	HOLE_MISS
-	m_cBigDef[9] = 'E';		//	EXTRA
-	m_cBigDef[10] = 'P';	//	PAD
-	m_cBigDef[11] = 'L';	//	HOLE_POSITION
-	m_cBigDef[12] = 'X';	//	POI
-	m_cBigDef[13] = 'T';	//	VH_POSITION
-	m_cBigDef[14] = 'M';	//	VH_MISS
-	m_cBigDef[15] = 'F';	//	HOLE_DEFECT
-	m_cBigDef[16] = 'C';	//	HOLE_OPEN
-	m_cBigDef[17] = 'G';	//	VH_OPEN
-	m_cBigDef[18] = 'V';	//	VH_DEF
+	m_cBigDef[1] = 'N';		//	DEF_NICK
+	m_cBigDef[2] = 'D';		//	DEF_PROTRUSION
+	m_cBigDef[3] = 'A';		//	DEF_SPACE
+	m_cBigDef[4] = 'O';		//	DEF_OPEN
+	m_cBigDef[5] = 'S';		//	DEF_SHORT
+	m_cBigDef[6] = 'U';		//	DEF_USHORT
+	m_cBigDef[7] = 'I';		//	DEF_PINHOLE
+	m_cBigDef[8] = 'H';		//	DEF_HOLE_MISS
+	m_cBigDef[9] = 'E';		//	DEF_EXTRA
+	m_cBigDef[10] = 'P';	//	DEF_PAD
+	m_cBigDef[11] = 'L';	//	DEF_HOLE_POSITION
+	m_cBigDef[12] = 'X';	//	DEF_POI
+	m_cBigDef[13] = 'T';	//	DEF_VH_POSITION
+	m_cBigDef[14] = 'M';	//	DEF_VH_MISS
+	m_cBigDef[15] = 'F';	//	DEF_HOLE_DEFECT		'F'
+	m_cBigDef[16] = 'C';	//	DEF_HOLE_OPEN
+	m_cBigDef[17] = 'G';	//	DEF_VH_OPEN
+	m_cBigDef[18] = 'V';	//	DEF_VH_DEF
+	m_cBigDef[19] = 'K';	//	DEF_EDGE_NICK
+	m_cBigDef[20] = 'R';	//	DEF_EDGE_PROT
+	m_cBigDef[21] = 'B';	//	DEF_EDGE_SPACE
+	m_cBigDef[22] = 'J';	//	DEF_USER_DEFINE_1
+	m_cBigDef[23] = 'Q';	//	DEF_NARROW
+	m_cBigDef[24] = 'W';	//	DEF_WIDE
+	m_cBigDef[25] = 'F';	//	DEF_FIXED_DEF		'F'
+	m_cBigDef[26] = 'Y';	//	DEF_VH_SIZE
+	m_cBigDef[27] = 'Z';	//	DEF_VH_EDGE
+	m_cBigDef[28] = '?';	//	DEF_LIGHT
+	m_cBigDef[29] = '@';	//	DEF_INNER
 
-	m_cSmallDef[0] = '*';
-	m_cSmallDef[1] = 'n';
-	m_cSmallDef[2] = 'd';
-	m_cSmallDef[3] = 'a';
-	m_cSmallDef[4] = 'o';
-	m_cSmallDef[5] = 's';
-	m_cSmallDef[6] = 'u';
-	m_cSmallDef[7] = 'i';
-	m_cSmallDef[8] = 'h';
-	m_cSmallDef[9] = 'e';
-	m_cSmallDef[10] = 'p';
-	m_cSmallDef[11] = 'l';
-	m_cSmallDef[12] = 'x';
-	m_cSmallDef[13] = 't';
-	m_cSmallDef[14] = 'm';
-	m_cSmallDef[15] = 'f';
-	m_cSmallDef[16] = 'c';
-	m_cSmallDef[17] = 'g';
-	m_cSmallDef[18] = 'v';
+	m_cSmallDef[0] = '*';	//	NONE
+	m_cSmallDef[1] = 'n';	//	DEF_NICK
+	m_cSmallDef[2] = 'd';	//	DEF_PROTRUSION
+	m_cSmallDef[3] = 'a';	//	DEF_SPACE
+	m_cSmallDef[4] = 'o';	//	DEF_OPEN
+	m_cSmallDef[5] = 's';	//	DEF_SHORT
+	m_cSmallDef[6] = 'u';	//	DEF_USHORT
+	m_cSmallDef[7] = 'i';	//	DEF_PINHOLE
+	m_cSmallDef[8] = 'h';	//	DEF_HOLE_MISS
+	m_cSmallDef[9] = 'e';	//	DEF_EXTRA
+	m_cSmallDef[10] = 'p';	//	DEF_PAD
+	m_cSmallDef[11] = 'l';	//	DEF_HOLE_POSITION
+	m_cSmallDef[12] = 'x';	//	DEF_POI
+	m_cSmallDef[13] = 't';	//	DEF_VH_POSITION
+	m_cSmallDef[14] = 'm';	//	DEF_VH_MISS
+	m_cSmallDef[15] = 'f';	//	DEF_HOLE_DEFECT		'f'
+	m_cSmallDef[16] = 'c';	//	DEF_HOLE_OPEN
+	m_cSmallDef[17] = 'g';	//	DEF_VH_OPEN
+	m_cSmallDef[18] = 'v';	//	DEF_VH_DEF
+	m_cSmallDef[19] = 'k';	//	DEF_EDGE_NICK
+	m_cSmallDef[20] = 'r';	//	DEF_EDGE_PROT
+	m_cSmallDef[21] = 'b';	//	DEF_EDGE_SPACE
+	m_cSmallDef[22] = 'j';	//	DEF_USER_DEFINE_1
+	m_cSmallDef[23] = 'q';	//	DEF_NARROW
+	m_cSmallDef[24] = 'w';	//	DEF_WIDE
+	m_cSmallDef[25] = 'f';	//	DEF_FIXED_DEF		'f'
+	m_cSmallDef[26] = 'y';	//	DEF_VH_SIZE
+	m_cSmallDef[27] = 'z';	//	DEF_VH_EDGE
+	m_cSmallDef[28] = '?';	//	DEF_LIGHT
+	m_cSmallDef[29] = '@';	//	DEF_INNER
 
 	m_pPnlNum = NULL;
 	m_pPnlDefNum = NULL;
 	pPcsDef = NULL;
+	//pMkedPcsDef = NULL;
+	//pMkedPcsSerial = NULL;
 	pFrmRgn = NULL;
 	pPcsRgn = NULL;
-// 	pMkInfo = NULL;
 
 	m_pPnlBuf = NULL;
 	m_nPnlBuf = 0;
 
-	if(nPnl>0 && nPcs>0)
+	if (nPnl > 0 && nPcs > 0)
 	{
 		pFrmRgn = new CRect[nPnl];
 		m_pPnlNum = new int[nPnl];
@@ -132,16 +166,12 @@ CReelMap::CReelMap(int nLayer, int nPnl, int nPcs, int nDir)
 
 	m_bThreadAliveRemakeReelmap = FALSE;
 	m_sPathOnThread = _T("");
-	
+
 	m_bThreadAliveReloadReelmap = FALSE;
 	m_nLastOnThread = 0;
 	m_nTotalProgressReloadReelmap = 0;
 	m_nProgressReloadReelmap = 0;
 	m_bDoneReloadReelmap = FALSE;
-
-	//m_nProgressRemakeReelmapFromPcr = 0;
-	//m_nTotalProgressRemakeReelmapFromPcr = 0;
-	//m_bDoneRemakeReelmapFromPcr = FALSE;
 
 	m_nSelMarkingPnl = 2;
 	m_nWritedSerial = 0;
@@ -152,25 +182,29 @@ CReelMap::CReelMap(int nLayer, int nPnl, int nPcs, int nDir)
 
 
 	LoadConfig();
- 	InitRst();
+	InitRst();
 	InitPcs();
-	ClrPnlNum();	
+	ClrPnlNum();
 	ClrPnlDefNum();
 	ClrFixPcs();
 
-	m_nStartSerial = 0;
+	TCHAR szData[MAX_PATH];
+	if (0 < ::GetPrivateProfileString(_T("Info"), _T("Start Shot"), NULL, szData, sizeof(szData), m_sPathYield))
+		m_nStartSerial = _tstoi(szData);
+	else
+		m_nStartSerial = 0;
 
 	// ITS
-	//m_pPnlBufIts = NULL;
-	//m_nPnlBufIts = 0;
-
-	//ResetYield();
-
 	m_bThreadAliveFinalCopyItsFiles = FALSE;
 
 	for (nC = 0; nC < FIX_PCS_COL_MAX; nC++)
+	{
 		for (nR = 0; nR < FIX_PCS_ROW_MAX; nR++)
+		{
 			m_FixPcsRpt[nC][nR] = 0;
+			//m_FixPcsTotal[nC][nR] = 0;
+		}
+	}
 }
 
 CReelMap::~CReelMap()
@@ -7803,7 +7837,7 @@ CString CReelMap::GetResultTxt()
 	strFileData += strData;
 	strData.Format(_T("    13       È¦³»ºÒ·®%10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_HOLE_DEFECT], m_stResult.nDefPerStrip[1][DEF_HOLE_DEFECT], m_stResult.nDefPerStrip[2][DEF_HOLE_DEFECT], m_stResult.nDefPerStrip[3][DEF_HOLE_DEFECT], m_stResult.nEntireAddedDefect[DEF_HOLE_DEFECT]);
 	strFileData += strData;
-	strData.Format(_T("    14          POI  %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_POI], m_stResult.nDefPerStrip[1][DEF_POI], m_stResult.nDefPerStrip[2][DEF_POI], m_stResult.nDefPerStrip[3][DEF_POI], m_stResult.nEntireAddedDefect[DEF_POI]);
+	strData.Format(_T("    14          POI    %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_POI], m_stResult.nDefPerStrip[1][DEF_POI], m_stResult.nDefPerStrip[2][DEF_POI], m_stResult.nDefPerStrip[3][DEF_POI], m_stResult.nEntireAddedDefect[DEF_POI]);
 	strFileData += strData;
 	strData.Format(_T("    15        VH¿ÀÇÂ %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_VH_OPEN], m_stResult.nDefPerStrip[1][DEF_VH_OPEN], m_stResult.nDefPerStrip[2][DEF_VH_OPEN], m_stResult.nDefPerStrip[3][DEF_VH_OPEN], m_stResult.nEntireAddedDefect[DEF_VH_OPEN]);
 	strFileData += strData;
@@ -7813,7 +7847,25 @@ CString CReelMap::GetResultTxt()
 	strFileData += strData;
 	strData.Format(_T("    18        VH°áÇÔ %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_VH_DEF], m_stResult.nDefPerStrip[1][DEF_VH_DEF], m_stResult.nDefPerStrip[2][DEF_VH_DEF], m_stResult.nDefPerStrip[3][DEF_VH_DEF], m_stResult.nEntireAddedDefect[DEF_VH_DEF]);
 	strFileData += strData;
-	strData.Format(_T("    19         ³ë±¤  %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_LIGHT], m_stResult.nDefPerStrip[1][DEF_LIGHT], m_stResult.nDefPerStrip[2][DEF_LIGHT], m_stResult.nDefPerStrip[3][DEF_LIGHT], nTot);
+	strData.Format(_T("    19        E.Nick   %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_EDGE_NICK], m_stResult.nDefPerStrip[1][DEF_EDGE_NICK], m_stResult.nDefPerStrip[2][DEF_EDGE_NICK], m_stResult.nDefPerStrip[3][DEF_EDGE_NICK], m_stResult.nEntireAddedDefect[DEF_EDGE_NICK]);
+	strFileData += strData;
+	strData.Format(_T("    20        E.Prot   %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_EDGE_PROT], m_stResult.nDefPerStrip[1][DEF_EDGE_PROT], m_stResult.nDefPerStrip[2][DEF_EDGE_PROT], m_stResult.nDefPerStrip[3][DEF_EDGE_PROT], m_stResult.nEntireAddedDefect[DEF_EDGE_PROT]);
+	strFileData += strData;
+	strData.Format(_T("    21        E.Space %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_EDGE_SPACE], m_stResult.nDefPerStrip[1][DEF_EDGE_SPACE], m_stResult.nDefPerStrip[2][DEF_EDGE_SPACE], m_stResult.nDefPerStrip[3][DEF_EDGE_SPACE], m_stResult.nEntireAddedDefect[DEF_EDGE_SPACE]);
+	strFileData += strData;
+	strData.Format(_T("    22         UDD1  %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_USER_DEFINE_1], m_stResult.nDefPerStrip[1][DEF_USER_DEFINE_1], m_stResult.nDefPerStrip[2][DEF_USER_DEFINE_1], m_stResult.nDefPerStrip[3][DEF_USER_DEFINE_1], m_stResult.nEntireAddedDefect[DEF_USER_DEFINE_1]);
+	strFileData += strData;
+	strData.Format(_T("    23       ¼±Æø°¨¼Ò%10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_NARROW], m_stResult.nDefPerStrip[1][DEF_NARROW], m_stResult.nDefPerStrip[2][DEF_NARROW], m_stResult.nDefPerStrip[3][DEF_NARROW], m_stResult.nEntireAddedDefect[DEF_NARROW]);
+	strFileData += strData;
+	strData.Format(_T("    24       ¼±ÆøÁõ°¡%10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_WIDE], m_stResult.nDefPerStrip[1][DEF_WIDE], m_stResult.nDefPerStrip[2][DEF_WIDE], m_stResult.nDefPerStrip[3][DEF_WIDE], m_stResult.nEntireAddedDefect[DEF_WIDE]);
+	strFileData += strData;
+	strData.Format(_T("    25       °íÁ¤ºÒ·®%10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_FIXED_DEF], m_stResult.nDefPerStrip[1][DEF_FIXED_DEF], m_stResult.nDefPerStrip[2][DEF_FIXED_DEF], m_stResult.nDefPerStrip[3][DEF_FIXED_DEF], m_stResult.nEntireAddedDefect[DEF_FIXED_DEF]);
+	strFileData += strData;
+	strData.Format(_T("    26        VHÅ©±â %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_VH_SIZE], m_stResult.nDefPerStrip[1][DEF_VH_SIZE], m_stResult.nDefPerStrip[2][DEF_VH_SIZE], m_stResult.nDefPerStrip[3][DEF_VH_SIZE], m_stResult.nEntireAddedDefect[DEF_VH_SIZE]);
+	strFileData += strData;
+	strData.Format(_T("    27    VH¿¡Áö°áÇÔ%10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_VH_EDGE], m_stResult.nDefPerStrip[1][DEF_VH_EDGE], m_stResult.nDefPerStrip[2][DEF_VH_EDGE], m_stResult.nDefPerStrip[3][DEF_VH_EDGE], m_stResult.nEntireAddedDefect[DEF_VH_EDGE]);
+	strFileData += strData;
+	strData.Format(_T("    28         ³ë±¤    %10d%10d%10d%10d%20d\r\n"), m_stResult.nDefPerStrip[0][DEF_LIGHT], m_stResult.nDefPerStrip[1][DEF_LIGHT], m_stResult.nDefPerStrip[2][DEF_LIGHT], m_stResult.nDefPerStrip[3][DEF_LIGHT], nTot);
 	strFileData += strData;
 	strFileData += _T("    -----------------------------------------------------------------------------\r\n");
 	strFileData += _T("                                                                                 \r\n");

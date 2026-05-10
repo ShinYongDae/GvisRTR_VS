@@ -255,13 +255,24 @@ typedef enum {KOREAN=0, ENGLISH=1, JAPANESE=2} LANG;
 #define RGB_DARK_BLUE	RGB(68,136,204)
 #define RGB_FRAME		RGB(212,208,200)
 
-#define RGB_DARK_GREEN	RGB(0,125,60)
-#define RGB_LT_PURPLE	RGB(179,179,255)
-#define RGB_LT_YELLOW	RGB(255,255,150)
-#define RGB_LT_PINK		RGB(255,200,200)
-#define RGB_LT_GREEN	RGB(195,255,195)
-#define RGB_LT_BLUE		RGB(210,255,255)
-#define RGB_WH_ORANGE	RGB(255,220,190)
+#define RGB_DARK_GREEN		RGB(0,125,60)
+#define RGB_LT_PURPLE		RGB(179,179,255)
+#define RGB_LT_YELLOW		RGB(255,255,150)
+#define RGB_LT_PINK			RGB(255,200,200)
+#define RGB_LT_GREEN		RGB(195,255,195)
+#define RGB_LT_BLUE			RGB(210,255,255)
+#define RGB_WH_ORANGE		RGB(255,220,190)
+#define RGB_PURPLE			RGB(147,112,216)
+#define RGB_DARKPURPLE		RGB(64,0,64)
+#define RGB_LT_DARKMAGENTA	RGB(204,50,153)
+#define RGB_MUSTARD			RGB(217,217,25)
+#define RGB_SKY				RGB(173, 234, 234)
+#define RGB_LT_BROWN		RGB(209, 146, 117)
+#define RGB_PEACOCK_GREEN	RGB(100, 186, 146)
+#define RGB_FOREST_GREEN	RGB(85, 158, 124)
+#define RGB_EVER_GREEN		RGB(74, 118, 98)
+#define	RGB_PCS_OUT			RGB_LTGRAY
+
 
 
 #define PATH_LOCAL_SPEC					_T("C:\\R2RSet\\LocalSpec")
@@ -497,7 +508,11 @@ typedef enum {KOREAN=0, ENGLISH=1, JAPANESE=2} LANG;
 #define DEF_USER_DEFINE_1			22	    // User Define 1
 #define DEF_NARROW					23	    // User Define 2
 #define DEF_WIDE					24	    // User Define 3
-#define DEF_LIGHT					25	
+#define DEF_FIXED_DEF				25	    // User Define 3
+#define DEF_VH_SIZE					26	    // User Define 3
+#define DEF_VH_EDGE					27	    // User Define 3
+#define DEF_LIGHT					28	
+#define DEF_INNER					29	
 
 enum SAPP3_CODE{	SAPP3_OPEN = 0,
 //					SAPP3_SHORT_USHORT = 1,
