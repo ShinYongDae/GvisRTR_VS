@@ -482,7 +482,7 @@ typedef enum {KOREAN=0, ENGLISH=1, JAPANESE=2} LANG;
 
 #define DEF_UPPER					19
 
-#define MAX_DEF						26
+#define MAX_DEF						30
 #define DEF_NONE					0		// NONE 	
 #define DEF_NICK					1		// Nick 	
 #define DEF_PROTRUSION				2		// Excessive line width

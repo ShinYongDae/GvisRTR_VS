@@ -13072,7 +13072,7 @@ CString CGvisR2R_PunchDoc::GetItsTargetPath(int nSerial, int nLayer)	// RMAP_UP,
 	case RMAP_UP: // 諼類 Top
 		if (pDoc->GetTestMode() == MODE_OUTER)
 		{
-			str.Format(_T("%s_L2_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+			str.Format(_T("%s_L1_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 			sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
 		}
 		else
@@ -13084,7 +13084,7 @@ CString CGvisR2R_PunchDoc::GetItsTargetPath(int nSerial, int nLayer)	// RMAP_UP,
 	case RMAP_DN: // 諼類 Bottom
 		if (pDoc->GetTestMode() == MODE_OUTER)
 		{
-			str.Format(_T("%s_L2_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+			str.Format(_T("%s_L1_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 			sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
 		}
 		else
@@ -13094,11 +13094,11 @@ CString CGvisR2R_PunchDoc::GetItsTargetPath(int nSerial, int nLayer)	// RMAP_UP,
 		}
 		break;
 	case RMAP_INNER_UP: // 頂類 Top
-		str.Format(_T("%s_L1_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		str.Format(_T("%s_L0_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 		sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
 		break;
 	case RMAP_INNER_DN: // 頂類 Bottom
-		str.Format(_T("%s_L1_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		str.Format(_T("%s_L0_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 		sPath.Format(_T("%s\\%s"), sItsFolderPath, str);
 		break;
 	}
@@ -13116,19 +13116,25 @@ CString CGvisR2R_PunchDoc::GetItsPath(int nSerial, int nLayer)	// RMAP_UP, RMAP_
 	switch (nLayer)
 	{
 	case RMAP_UP: // 諼類 Top
-		str.Format(_T("%s_L2_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		if (pDoc->GetTestMode() == MODE_OUTER)
+			str.Format(_T("%s_L1_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		else
+			str.Format(_T("%s_L0_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 		sPath.Format(_T("%s\\Outer\\%s"), sItsFolderPath, str);
 		break;
 	case RMAP_DN: // 諼類 Bottom
-		str.Format(_T("%s_L2_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		if (pDoc->GetTestMode() == MODE_OUTER)
+			str.Format(_T("%s_L1_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		else
+			str.Format(_T("%s_L0_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 		sPath.Format(_T("%s\\Outer\\%s"), sItsFolderPath, str);
 		break;
 	case RMAP_INNER_UP: // 頂類 Top
-		str.Format(_T("%s_L1_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		str.Format(_T("%s_L0_%04d_T_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 		sPath.Format(_T("%s\\Inner\\%s"), sItsFolderPath, str);
 		break;
 	case RMAP_INNER_DN: // 頂類 Bottom
-		str.Format(_T("%s_L1_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
+		str.Format(_T("%s_L0_%04d_B_%s_%s_AVR01_%s.dat"), m_sItsCode, nSerial, WorkingInfo.LastJob.sSelUserName, WorkingInfo.System.sMcName, sTime);
 		sPath.Format(_T("%s\\Inner\\%s"), sItsFolderPath, str);
 		break;
 	}
